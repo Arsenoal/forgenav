@@ -11,7 +11,7 @@
 ![iOS](https://img.shields.io/badge/platform-iOS-000000?logo=apple&logoColor=white)
 ![Desktop](https://img.shields.io/badge/platform-JVM%20desktop-007396?logo=openjdk&logoColor=white)
 
-**v1.0.0** on [Maven Central](https://central.sonatype.com/namespace/studio.forgenav) · [Release notes](CHANGELOG.md#100---2026-07-15)
+**v1.1.0** on [Maven Central](https://central.sonatype.com/namespace/studio.forgenav) · [Release notes](CHANGELOG.md#110---2026-07-15)
 
 Type-safe routes, a Compose Multiplatform `NavHost`, MVI with optimistic updates, and first-class sync UX (pending outbox, conflicts, offline banners). Pairs cleanly with **[SyncForge](https://github.com/Arsenoal/syncforge)** — or any outbox-based engine via thin ports.
 
@@ -40,10 +40,12 @@ Type-safe routes, a Compose Multiplatform `NavHost`, MVI with optimistic updates
 ```kotlin
 // app/build.gradle.kts (or shared KMP commonMain)
 dependencies {
-    implementation("studio.forgenav:forgenv-core:1.0.0")
-    implementation("studio.forgenav:forgenv-compose:1.0.0")
+    implementation("studio.forgenav:forgenv-core:1.1.0")
+    implementation("studio.forgenav:forgenv-compose:1.1.0")
     // optional SyncForge integration:
-    implementation("studio.forgenav:forgenv-syncforge:1.0.0")
+    implementation("studio.forgenav:forgenv-syncforge:1.1.0")
+    // optional unit-test helpers:
+    // testImplementation("studio.forgenav:forgenv-testing:1.1.0")
 }
 ```
 
@@ -81,12 +83,13 @@ fun App() {
 
 ```toml
 [versions]
-forgenav = "1.0.0"
+forgenav = "1.1.0"
 
 [libraries]
 forgenav-core = { module = "studio.forgenav:forgenv-core", version.ref = "forgenav" }
 forgenav-compose = { module = "studio.forgenav:forgenv-compose", version.ref = "forgenav" }
 forgenav-syncforge = { module = "studio.forgenav:forgenv-syncforge", version.ref = "forgenav" }
+forgenav-testing = { module = "studio.forgenav:forgenv-testing", version.ref = "forgenav" }
 ```
 
 **SyncForge (optional):**

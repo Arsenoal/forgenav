@@ -5,25 +5,55 @@ All notable changes to ForgeNav are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] — Nav3-functional navigation (Phase A)
+## [Unreleased]
+
+## [1.1.0] — 2026-07-15
+
+### Published
+
+Maven Central group **`studio.forgenav`** (domain **`forgenav.studio`**):
+
+```text
+studio.forgenav:forgenv-core:1.1.0
+studio.forgenav:forgenv-compose:1.1.0
+studio.forgenav:forgenv-syncforge:1.1.0
+studio.forgenav:forgenv-testing:1.1.0
+```
+
+GitHub tag `v1.1.0` · Publish Release workflow · Nav3 Phase A navigation surface.
 
 ### Added
 
-- **Multi-stack / tabs** — `TabSpec`, `selectTab` / `tabBackStack` / `navigateInTab`, `TabNavHost` bottom-nav scaffold
-- **Nav options** — `NavOptions` (popUpTo, singleTop, clearBackStack, save/restore flags, result request id)
-- **Results** — `navigateForResult`, `setResult`, `NavResult.Ok` / `Cancelled`, `NavResultHub`
-- **Interceptors** — `NavigationInterceptor` + `InterceptResult` (Proceed / Cancel / Redirect), `StartRouteProvider`
-- **Deep links** — stack rebuild via `DeepLinkPattern.stackPrefix` / `DeepLink.stackRoutes`, priority matching, tab/nested graph targeting, Android `Intent.toForgeDeepLinkUri()` / `handleForgeDeepLink`
-- **Adaptive UI** — `ListDetailNavHost` (compact single stack / expanded dual pane)
-- **Entry saveable state** — per-`NavEntry.id` `SaveableStateHolder` in `ForgeNavHostContent`
-- **Modal slots** — custom `dialog` / `bottomSheet` chrome on `ForgeNavHost`
-- **Stack ops** — `setBackStack`, `popBackStack(count)`, enhanced save/restore with `selectedTabId`
-- **forgenv-testing** — `testForgeNavigator`, stack assertions, result helpers (Turbine-ready)
+#### Navigation (Nav3 Phase A — product parity)
+
+- **Multi-stack / tabs** — `TabSpec`, `selectTab` / `tabBackStack` / `navigateInTab`, `TabNavHost` bottom-nav scaffold with independent per-tab back stacks and restore
+- **Nav options** — `NavOptions` (popUpTo, inclusive, singleTop / launchSingleTop, clearBackStack, save/restore flags, result request id)
+- **Results** — `navigateForResult`, `setResult`, `clearResult`, `NavResult.Ok` / `NavResult.Cancelled`, `NavResultHub`
+- **Interceptors** — `NavigationInterceptor` + `InterceptResult` (Proceed / Cancel / Redirect), `StartRouteProvider` for conditional start
+- **Deep links** — stack rebuild via `DeepLinkPattern.stackPrefix` / `DeepLink.stackRoutes`, priority matching, tab/nested graph targeting (`nestedGraphId`), popUpTo on patterns
+- **Adaptive UI** — `ListDetailNavHost` (compact single stack / expanded dual pane) + `navigateToDetail`
+- **Entry saveable state** — per-`NavEntry.id` `SaveableStateHolder` in `ForgeNavHostContent` (prunes off-stack entries)
+- **Modal slots** — custom `dialog` / `bottomSheet` chrome parameters on `ForgeNavHost` (defaults keep Material3 AlertDialog / ModalBottomSheet)
+- **Stack ops** — `setBackStack(routes)`, `popBackStack(count)`, enhanced save/restore with `selectedTabId`
+- **Android deep links** — `Intent.toForgeDeepLinkUri()`, `ForgeNavigator.handleForgeDeepLink`, `forgeDeepLinkIntent`, activity helpers
+
+#### Testing
+
+- **forgenv-testing** — new published module: `testForgeNavigator`, stack assertions (`assertRouteKeys`, `assertTabRouteKeys`), result helpers (`requireOk`, `deliverResultAndPop`), Turbine-ready event helpers
 
 ### Changed
 
-- `SavedNavigatorState` version **2** (adds `selectedTabId`; v1 payloads still decode)
-- `rememberForgeNavigator` / `rememberSaveableForgeNavigator` accept tabs, interceptors, deep link parser
+- `SavedNavigatorState` version **2** (adds `selectedTabId`; v1 payloads still decode with kotlinx defaults)
+- `rememberForgeNavigator` / `rememberSaveableForgeNavigator` accept tabs, interceptors, deep-link parser, start-route provider
+- `DeepLinkParser.register(...)` convenience API exposes `stackPrefix`, `priority`, popUpTo, `singleTop`
+- Samples (Android / Desktop / iOS) rebuild deep-link stacks as Home → Detail; Android sample uses Intent URI helper + `onNewIntent`
+- Publish / verify tooling includes `forgenv-testing` alongside core, compose, and syncforge
+
+### Docs
+
+- `docs/NAV3_PARITY.md` Phase A checklist marked complete
+- README modules and version pins updated for 1.1.0
+- `docs/RELEASE.md` / `docs/MAVEN_PUBLISH.md` updated for four artifacts
 
 ## [1.0.0] — 2026-07-15
 
@@ -53,7 +83,7 @@ GitHub tag `v1.0.0` · publish + verify workflows · artifacts validated on repo
 
 ## [0.9.0] — Previews, testing utilities, performance hardening
 
-See README §3 Version History.
+See README version history notes in earlier docs.
 
 ## [0.8.0] — iOS + full CMP support
 

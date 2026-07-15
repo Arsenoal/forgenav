@@ -2,7 +2,7 @@
 
 **Repository:** [github.com/Arsenoal/forgenav](https://github.com/Arsenoal/forgenav)  
 **Group ID:** `studio.forgenav` (namespace verified via DNS on `forgenav.studio`)  
-**Current release on Central:** **`1.0.0`** (tag `v1.0.0`, verified on repo1.maven.org)  
+**Current release on Central:** **`1.1.0`** (tag `v1.1.0`; previous `1.0.0` still available)  
 **Publish workflow:** [.github/workflows/publish-release.yml](../.github/workflows/publish-release.yml) (`v*` tag push or manual dispatch)  
 **Verify workflow:** [.github/workflows/verify-maven-central.yml](../.github/workflows/verify-maven-central.yml) (manual)
 
@@ -11,8 +11,9 @@
 | Coordinate | Description |
 |------------|-------------|
 | `studio.forgenav:forgenv-core` | Navigation + MVI + sync ports |
-| `studio.forgenav:forgenv-compose` | Compose NavHost, transitions, sync UI |
+| `studio.forgenav:forgenv-compose` | Compose NavHost, tabs, list-detail, transitions, sync UI |
 | `studio.forgenav:forgenv-syncforge` | SyncForge adapters + local loop |
+| `studio.forgenav:forgenv-testing` | Test navigator helpers (1.1.0+) |
 
 KMP also publishes platform variants (e.g. `-android`, `-jvm`, Apple targets) from the same modules.
 
@@ -22,10 +23,11 @@ Browse: [repo1.maven.org/maven2/studio/forgenav/](https://repo1.maven.org/maven2
 
 ```kotlin
 dependencies {
-    implementation("studio.forgenav:forgenv-core:1.0.0")
-    implementation("studio.forgenav:forgenv-compose:1.0.0")
+    implementation("studio.forgenav:forgenv-core:1.1.0")
+    implementation("studio.forgenav:forgenv-compose:1.1.0")
     // optional:
-    implementation("studio.forgenav:forgenv-syncforge:1.0.0")
+    implementation("studio.forgenav:forgenv-syncforge:1.1.0")
+    testImplementation("studio.forgenav:forgenv-testing:1.1.0")
 }
 ```
 
@@ -95,24 +97,24 @@ Then in [Central Portal → Deployments](https://central.sonatype.com/): **Publi
 2. Bump `forgenav.version` + `CHANGELOG.md` if needed; commit; tag:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
-3. **Actions → Publish Release → Run workflow** → enter tag `v1.0.0`.
+3. **Actions → Publish Release → Run workflow** → enter tag `v1.1.0` (or rely on tag push).
 4. After the job succeeds: Central Portal → **Publish** deployments.
 5. Optional: create a GitHub Release for the tag in the UI.
 6. After sync (~15–60 min), validate all artifacts:
 
-**GitHub (manual job):** Actions → **Verify Maven Central** → Run workflow → tag `v1.0.0`  
-(or version `1.0.0`). Retries until POMs appear on `repo1.maven.org`.
+**GitHub (manual job):** Actions → **Verify Maven Central** → Run workflow → tag `v1.1.0`  
+(or version `1.1.0`). Retries until POMs appear on `repo1.maven.org`.
 
 **Locally:**
 
 ```bash
-./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.0.0
+./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.1.0
 # or
-./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralTag=v1.0.0
+./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralTag=v1.1.0
 ```
 
 ## 5. POM metadata (repo)
@@ -123,4 +125,4 @@ git push origin v1.0.0
 | `forgenav.pom.url` | `https://github.com/Arsenoal/forgenav` |
 | License | Apache 2.0 |
 
-Version for a release is set from the git tag in CI (`v1.0.0` → `forgenav.version=1.0.0`).
+Version for a release is set from the git tag in CI (`v1.1.0` → `forgenav.version=1.1.0`).

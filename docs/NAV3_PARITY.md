@@ -3,7 +3,7 @@
 Living inventory of everything we can add so ForgeNav **navigation** is as functional as **Jetpack Navigation 3 (Nav3)** for real apps — without becoming a line-by-line clone of Google’s library.
 
 **Audience:** maintainers  
-**Status:** Phase A implemented on main (post-1.0.0 unreleased)  
+**Status:** Phase A shipped in **v1.1.0**  
 **Last updated:** 2026-07-15
 
 ---

@@ -2,7 +2,7 @@
 
 This document is the **contract** for ForgeNav to function correctly: what the library guarantees, what consumers must provide, what must be true at runtime, and what we still need to harden for production.
 
-**Status:** v1.0.0 published on Maven Central (`studio.forgenav`) and verified  
+**Status:** v1.1.0 on Maven Central (`studio.forgenav`) — Nav3 Phase A navigation  
 **Last updated:** 2026-07-15
 
 ---
@@ -24,9 +24,9 @@ Composite SyncForge + typed adapters + sample real loop are implemented:
 5. ~~Saved backstack state~~ → `RouteCodec` + `saveState`/`restoreState` + `rememberSaveableForgeNavigator`
 6. ~~Transitions + predictive back~~ → `NavTransitions` + `ForgeBackHandler` / `PredictiveBackHandler`
 7. ~~iOS sample~~ → `sample-ios` + `iosApp` (Xcode host; run on macOS)
-8. ~~Maven Central publish~~ → `studio.forgenav` 1.0.0 + Publish / Verify Actions
+8. ~~Maven Central publish~~ → `studio.forgenav` 1.0.0 + 1.1.0 + Publish / Verify Actions
 9. Still later: device smoke, umbrella `forgenav-android` artifact  
-10. Navigation depth: [NAV3_PARITY.md](NAV3_PARITY.md) (tabs, list–detail, results, deep links)
+10. ~~Navigation depth (Phase A)~~ → [NAV3_PARITY.md](NAV3_PARITY.md) shipped in **1.1.0**
 
 ### Success criteria
 
@@ -303,7 +303,7 @@ Use this before calling a build “integration complete”:
 | Saved state / process death | Strongly recommended Android | Yes for mobile QA | Done (`RouteCodec` + `rememberSaveableForgeNavigator`) |
 | Animations | No | No | Not done |
 | iOS sample app | No | If shipping iOS | Targets only |
-| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.0.0` on Central |
+| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.1.0` on Central |
 
 **Correctness of the library core ≠ completeness of a product integration.**
 

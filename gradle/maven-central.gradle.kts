@@ -15,11 +15,12 @@ val publishableLibraryArtifactIds = listOf(
     "forgenv-core",
     "forgenv-compose",
     "forgenv-syncforge",
+    "forgenv-testing",
 )
 
 /**
  * Full set of module coordinates that must resolve on repo1.maven.org after a complete
- * multiplatform publish (matches Central Portal component set for 1.0.0).
+ * multiplatform publish (matches Central Portal component set for 1.1.0).
  */
 val mavenCentralRequiredArtifactIds = listOf(
     // forgenv-core
@@ -42,6 +43,13 @@ val mavenCentralRequiredArtifactIds = listOf(
     "forgenv-syncforge-iosarm64",
     "forgenv-syncforge-iosx64",
     "forgenv-syncforge-iossimulatorarm64",
+    // forgenv-testing (1.1.0+)
+    "forgenv-testing",
+    "forgenv-testing-android",
+    "forgenv-testing-jvm",
+    "forgenv-testing-iosarm64",
+    "forgenv-testing-iosx64",
+    "forgenv-testing-iossimulatorarm64",
 )
 
 fun Project.readGradlePropertiesVersion(propertiesFile: java.io.File): String {
