@@ -16,6 +16,7 @@ val publishableModules = setOf(
     "forgenv-core",
     "forgenv-compose",
     "forgenv-syncforge",
+    "forgenv-testing",
 )
 
 fun Project.readRootGradleProperty(name: String): String? {

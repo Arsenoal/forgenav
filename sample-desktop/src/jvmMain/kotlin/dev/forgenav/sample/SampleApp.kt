@@ -56,7 +56,11 @@ fun SampleApp(deepLinkUri: String? = null) {
     }
     val parser = remember {
         DeepLinkParser(graph)
-            .register("forgenav://tasks/{id}", AppRoute.TaskDetail.serializer())
+            .register(
+                pattern = "forgenav://tasks/{id}",
+                serializer = AppRoute.TaskDetail.serializer(),
+                stackPrefix = listOf(AppRoute.Home),
+            )
     }
     val routeCodec = remember {
         RouteCodec().register("AppRoute", AppRoute.serializer()) { it is AppRoute }
@@ -65,6 +69,7 @@ fun SampleApp(deepLinkUri: String? = null) {
     val navigator = rememberSaveableForgeNavigator(
         startRoute = AppRoute.Home,
         routeCodec = routeCodec,
+        deepLinkParser = parser,
     )
     val snackbar = remember { SnackbarHostState() }
 

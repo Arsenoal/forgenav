@@ -25,7 +25,9 @@ Type-safe routes, a Compose Multiplatform `NavHost`, MVI with optimistic updates
 
 **Offline-first MVI** — `MviViewModel` with optimistic updates, rollback, and optional `SyncFacade` binding.
 
-**Compose-first** — `ForgeNavHost`, transitions, predictive/system back, Material3 sync widgets.
+**Compose-first** — `ForgeNavHost`, tabs, list–detail, transitions, predictive/system back, Material3 sync widgets.
+
+**Nav3-level product navigation** — multi-stack tabs, navigate-for-result, deep-link stack rebuild, interceptors, adaptive panes.
 
 **Engine-agnostic sync ports** — `SyncEngine` / `Outbox` / `ConflictResolver` in core; optional `forgenv-syncforge` adapters.
 
@@ -119,9 +121,10 @@ Deeper walkthrough: [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) · SyncForge si
 
 | Artifact | Role |
 |----------|------|
-| [`forgenv-core`](forgenv-core/) | Routes, navigator, deep links, MVI, sync ports, saved state |
-| [`forgenv-compose`](forgenv-compose/) | `ForgeNavHost`, transitions, back, sync UI widgets |
+| [`forgenv-core`](forgenv-core/) | Routes, multi-stack navigator, deep links, results, interceptors, MVI, sync ports |
+| [`forgenv-compose`](forgenv-compose/) | `ForgeNavHost`, `TabNavHost`, `ListDetailNavHost`, transitions, back, sync UI |
 | [`forgenv-syncforge`](forgenv-syncforge/) | SyncForge adapters + `LocalSyncForgeLoop` |
+| [`forgenv-testing`](forgenv-testing/) | `testForgeNavigator`, stack assertions (no Compose UI required) |
 
 Browse published coordinates: [Maven Central — studio.forgenav](https://repo1.maven.org/maven2/studio/forgenav/)
 

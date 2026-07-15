@@ -5,6 +5,26 @@ All notable changes to ForgeNav are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — Nav3-functional navigation (Phase A)
+
+### Added
+
+- **Multi-stack / tabs** — `TabSpec`, `selectTab` / `tabBackStack` / `navigateInTab`, `TabNavHost` bottom-nav scaffold
+- **Nav options** — `NavOptions` (popUpTo, singleTop, clearBackStack, save/restore flags, result request id)
+- **Results** — `navigateForResult`, `setResult`, `NavResult.Ok` / `Cancelled`, `NavResultHub`
+- **Interceptors** — `NavigationInterceptor` + `InterceptResult` (Proceed / Cancel / Redirect), `StartRouteProvider`
+- **Deep links** — stack rebuild via `DeepLinkPattern.stackPrefix` / `DeepLink.stackRoutes`, priority matching, tab/nested graph targeting, Android `Intent.toForgeDeepLinkUri()` / `handleForgeDeepLink`
+- **Adaptive UI** — `ListDetailNavHost` (compact single stack / expanded dual pane)
+- **Entry saveable state** — per-`NavEntry.id` `SaveableStateHolder` in `ForgeNavHostContent`
+- **Modal slots** — custom `dialog` / `bottomSheet` chrome on `ForgeNavHost`
+- **Stack ops** — `setBackStack`, `popBackStack(count)`, enhanced save/restore with `selectedTabId`
+- **forgenv-testing** — `testForgeNavigator`, stack assertions, result helpers (Turbine-ready)
+
+### Changed
+
+- `SavedNavigatorState` version **2** (adds `selectedTabId`; v1 payloads still decode)
+- `rememberForgeNavigator` / `rememberSaveableForgeNavigator` accept tabs, interceptors, deep link parser
+
 ## [1.0.0] — 2026-07-15
 
 ### Published

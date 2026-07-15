@@ -26,6 +26,7 @@ val libraryPublishProjects = listOf(
     ":forgenv-core",
     ":forgenv-compose",
     ":forgenv-syncforge",
+    ":forgenv-testing",
 )
 
 tasks.register("publishAllToMavenLocal") {
@@ -71,11 +72,14 @@ tasks.register("verifyReleaseSignOff") {
     dependsOn(
         ":forgenv-core:jvmTest",
         ":forgenv-syncforge:jvmTest",
+        ":forgenv-testing:jvmTest",
         ":forgenv-core:compileKotlinJvm",
         ":forgenv-compose:compileKotlinJvm",
         ":forgenv-syncforge:compileKotlinJvm",
+        ":forgenv-testing:compileKotlinJvm",
         ":forgenv-core:compileDebugKotlinAndroid",
         ":forgenv-compose:compileDebugKotlinAndroid",
         ":forgenv-syncforge:compileDebugKotlinAndroid",
+        ":forgenv-testing:compileDebugKotlinAndroid",
     )
 }

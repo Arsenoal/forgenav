@@ -14,9 +14,11 @@ data class SavedNavigatorState(
     val root: SavedBackStackState,
     val nested: Map<String, SavedBackStackState> = emptyMap(),
     val pendingDeepLinks: List<String> = emptyList(),
+    /** Active tab id when using multi-stack tabs (null = root stack only). */
+    val selectedTabId: String? = null,
 ) {
     companion object {
-        const val CURRENT_VERSION: Int = 1
+        const val CURRENT_VERSION: Int = 2
     }
 }
 

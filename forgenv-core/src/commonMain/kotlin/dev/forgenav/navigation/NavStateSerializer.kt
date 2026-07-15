@@ -43,12 +43,14 @@ class NavStateSerializer(
         root: BackStackSnapshot,
         nested: Map<String, BackStackSnapshot>,
         pendingDeepLinks: List<String> = emptyList(),
+        selectedTabId: String? = null,
     ): SavedNavigatorState =
         SavedNavigatorState(
             version = SavedNavigatorState.CURRENT_VERSION,
             root = encodeBackStack(root),
             nested = nested.mapValues { (_, snap) -> encodeBackStack(snap) },
             pendingDeepLinks = pendingDeepLinks,
+            selectedTabId = selectedTabId,
         )
 
     fun decodeNavigator(state: SavedNavigatorState): DecodedNavigatorState {
@@ -59,6 +61,7 @@ class NavStateSerializer(
             root = decodeBackStack(state.root),
             nested = state.nested.mapValues { (_, saved) -> decodeBackStack(saved) },
             pendingDeepLinks = state.pendingDeepLinks,
+            selectedTabId = state.selectedTabId,
         )
     }
 
@@ -73,4 +76,5 @@ data class DecodedNavigatorState(
     val root: BackStackSnapshot,
     val nested: Map<String, BackStackSnapshot>,
     val pendingDeepLinks: List<String>,
+    val selectedTabId: String? = null,
 )

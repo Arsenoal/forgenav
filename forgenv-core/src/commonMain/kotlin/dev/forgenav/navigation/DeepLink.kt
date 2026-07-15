@@ -15,6 +15,13 @@ data class DeepLink(
     val singleTop: Boolean = true,
     val nestedGraphId: String? = null,
     val extras: Map<String, String> = emptyMap(),
+    /**
+     * When non-empty, rebuild this full stack (root → … → leaf) instead of pushing only [route].
+     * [route] should typically equal the last element.
+     */
+    val stackRoutes: List<Route> = emptyList(),
+    val popUpToRouteKey: String? = null,
+    val popUpToInclusive: Boolean = false,
 )
 
 /**
@@ -24,6 +31,9 @@ data class DeepLink(
  * Query parameters map to optional route properties.
  *
  * Example: `app://tasks/{id}` → `TaskDetail(id = "…")`
+ *
+ * Use [stackPrefix] so a deep link rebuilds an intermediate stack (e.g. Home → Detail)
+ * instead of only pushing the leaf route.
  */
 data class DeepLinkPattern<T : Route>(
     val pattern: String,
@@ -31,14 +41,22 @@ data class DeepLinkPattern<T : Route>(
     val presentation: PresentationStyle = PresentationStyle.Screen,
     val clearBackStack: Boolean = false,
     val nestedGraphId: String? = null,
+    /** Routes pushed under the matched leaf (e.g. Home then Detail). */
+    val stackPrefix: List<Route> = emptyList(),
+    /** Higher priority is tried first (specificity / override). */
+    val priority: Int = 0,
+    val popUpToRouteKey: String? = null,
+    val popUpToInclusive: Boolean = false,
+    val singleTop: Boolean = true,
 )
 
 /**
  * Parses URI strings into [DeepLink]s using registered [DeepLinkPattern]s and
  * kotlinx.serialization for argument materialization.
  *
- * Design notes (v0.3):
- * - We deliberately avoid classpath scanning; apps register patterns explicitly.
+ * Design notes:
+ * - Apps register patterns explicitly (no classpath scanning).
+ * - Patterns are matched in descending [DeepLinkPattern.priority] order.
  * - Argument decoding prefers path segments, then query string, then defaults from JSON.
  * - Unknown patterns return null so hosts can fall through to platform handlers.
  */
@@ -50,6 +68,8 @@ class DeepLinkParser(
 
     fun <T : Route> register(pattern: DeepLinkPattern<T>): DeepLinkParser {
         patterns += CompiledPattern.compile(pattern)
+        // Keep sorted by priority desc so first match is best match.
+        patterns.sortByDescending { it.priority }
         return this
     }
 
@@ -59,6 +79,11 @@ class DeepLinkParser(
         presentation: PresentationStyle = PresentationStyle.Screen,
         clearBackStack: Boolean = false,
         nestedGraphId: String? = null,
+        stackPrefix: List<Route> = emptyList(),
+        priority: Int = 0,
+        popUpToRouteKey: String? = null,
+        popUpToInclusive: Boolean = false,
+        singleTop: Boolean = true,
     ): DeepLinkParser = register(
         DeepLinkPattern(
             pattern = pattern,
@@ -66,6 +91,11 @@ class DeepLinkParser(
             presentation = presentation,
             clearBackStack = clearBackStack,
             nestedGraphId = nestedGraphId,
+            stackPrefix = stackPrefix,
+            priority = priority,
+            popUpToRouteKey = popUpToRouteKey,
+            popUpToInclusive = popUpToInclusive,
+            singleTop = singleTop,
         ),
     )
 
@@ -76,13 +106,22 @@ class DeepLinkParser(
             val route = runCatching {
                 json.decodeFromString(compiled.serializer, match.toJsonObject())
             }.getOrNull() ?: continue
+            val stackRoutes = if (compiled.stackPrefix.isNotEmpty()) {
+                compiled.stackPrefix + route
+            } else {
+                emptyList()
+            }
             return DeepLink(
                 uri = normalized,
                 route = route,
                 presentation = compiled.presentation,
                 clearBackStack = compiled.clearBackStack,
+                singleTop = compiled.singleTop,
                 nestedGraphId = compiled.nestedGraphId,
                 extras = match.query.filterKeys { it !in match.pathArgs },
+                stackRoutes = stackRoutes,
+                popUpToRouteKey = compiled.popUpToRouteKey,
+                popUpToInclusive = compiled.popUpToInclusive,
             )
         }
         return null
@@ -137,6 +176,11 @@ private class CompiledPattern(
     val presentation: PresentationStyle,
     val clearBackStack: Boolean,
     val nestedGraphId: String?,
+    val stackPrefix: List<Route>,
+    val priority: Int,
+    val popUpToRouteKey: String?,
+    val popUpToInclusive: Boolean,
+    val singleTop: Boolean,
     private val regex: Regex,
     private val groupNames: List<String>,
 ) {
@@ -186,6 +230,11 @@ private class CompiledPattern(
                 presentation = pattern.presentation,
                 clearBackStack = pattern.clearBackStack,
                 nestedGraphId = pattern.nestedGraphId,
+                stackPrefix = pattern.stackPrefix,
+                priority = pattern.priority,
+                popUpToRouteKey = pattern.popUpToRouteKey,
+                popUpToInclusive = pattern.popUpToInclusive,
+                singleTop = pattern.singleTop,
                 regex = Regex(regexBody),
                 groupNames = names,
             )

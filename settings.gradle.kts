@@ -34,6 +34,7 @@ include(
     ":forgenv-core",
     ":forgenv-compose",
     ":forgenv-syncforge",
+    ":forgenv-testing",
     ":sample-android",
     ":sample-desktop",
     ":sample-ios",

@@ -19,6 +19,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import dev.forgenav.navigation.BackStackSnapshot
@@ -35,18 +37,10 @@ import dev.forgenav.navigation.Route
  * layered over the last full-screen entry.
  *
  * Features:
+ * - **Per-entry [SaveableStateHolder]** — `rememberSaveable` scoped by [NavEntry.id]
  * - **Transitions** via [transitionSpec] (default horizontal slide)
  * - **System / predictive back** via [enableSystemBack] → [ForgeBackHandler]
- *
- * Example:
- * ```
- * ForgeNavHost(navigator) { entry ->
- *     when (val route = entry.route) {
- *         is AppRoute.Home -> HomeScreen()
- *         is AppRoute.Detail -> DetailScreen(route.id)
- *     }
- * }
- * ```
+ * - **Custom modal chrome** via [dialog] / [bottomSheet] slots
  */
 @Composable
 fun ForgeNavHost(
@@ -54,6 +48,8 @@ fun ForgeNavHost(
     modifier: Modifier = Modifier,
     transitionSpec: NavTransitionSpec = NavTransitions.Default,
     enableSystemBack: Boolean = true,
+    dialog: (@Composable (entry: NavEntry, onDismiss: () -> Unit, content: @Composable () -> Unit) -> Unit)? = null,
+    bottomSheet: (@Composable (entry: NavEntry, onDismiss: () -> Unit, content: @Composable () -> Unit) -> Unit)? = null,
     content: @Composable (NavEntry) -> Unit,
 ) {
     CompositionLocalProvider(LocalForgeNavigator provides navigator) {
@@ -71,6 +67,8 @@ fun ForgeNavHost(
             onDismissModal = { navigator.popBackStack() },
             modifier = modifier,
             transitionSpec = transitionSpec,
+            dialog = dialog,
+            bottomSheet = bottomSheet,
             content = content,
         )
     }
@@ -86,10 +84,22 @@ fun ForgeNavHostContent(
     onDismissModal: () -> Unit,
     modifier: Modifier = Modifier,
     transitionSpec: NavTransitionSpec = NavTransitions.Default,
+    saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder(),
+    dialog: (@Composable (entry: NavEntry, onDismiss: () -> Unit, content: @Composable () -> Unit) -> Unit)? = null,
+    bottomSheet: (@Composable (entry: NavEntry, onDismiss: () -> Unit, content: @Composable () -> Unit) -> Unit)? = null,
     content: @Composable (NavEntry) -> Unit,
 ) {
     val entries = snapshot.entries
     if (entries.isEmpty()) return
+
+    // Drop saveable state for entries no longer on the stack.
+    val liveIds = remember(entries) { entries.map { it.id }.toSet() }
+    var knownIds by remember { mutableStateOf(liveIds) }
+    LaunchedEffect(liveIds) {
+        val removed = knownIds - liveIds
+        removed.forEach { saveableStateHolder.removeState(it) }
+        knownIds = liveIds
+    }
 
     val lastScreenIndex = entries.indexOfLast {
         it.metadata.presentation == PresentationStyle.Screen
@@ -98,7 +108,6 @@ fun ForgeNavHostContent(
     val screenEntry = entries[lastScreenIndex]
     val modalEntries = entries.drop(lastScreenIndex + 1)
 
-    // Detect pop vs push for transition direction
     var previousDepth by remember { mutableIntStateOf(entries.size) }
     var previousScreenId by remember { mutableStateOf(screenEntry.id) }
     var isPop by remember { mutableStateOf(false) }
@@ -107,7 +116,6 @@ fun ForgeNavHostContent(
         isPop = when {
             entries.size < previousDepth -> true
             entries.size > previousDepth -> false
-            // replace top: treat as forward
             screenEntry.id != previousScreenId -> false
             else -> isPop
         }
@@ -127,41 +135,71 @@ fun ForgeNavHostContent(
             label = "ForgeNavHost",
             modifier = Modifier.fillMaxSize(),
         ) { entry ->
-            content(entry)
+            saveableStateHolder.SaveableStateProvider(entry.id) {
+                content(entry)
+            }
         }
 
         modalEntries.forEach { entry ->
             key(entry.id) {
-                when (entry.metadata.presentation) {
-                    PresentationStyle.Dialog -> {
-                        AlertDialog(
-                            onDismissRequest = onDismissModal,
-                            confirmButton = {
-                                TextButton(onClick = onDismissModal) {
-                                    Text("Close")
+                saveableStateHolder.SaveableStateProvider(entry.id) {
+                    when (entry.metadata.presentation) {
+                        PresentationStyle.Dialog -> {
+                            if (dialog != null) {
+                                dialog(entry, onDismissModal) { content(entry) }
+                            } else {
+                                DefaultDialogChrome(onDismiss = onDismissModal) {
+                                    content(entry)
                                 }
-                            },
-                            text = {
-                                content(entry)
-                            },
-                        )
-                    }
-                    PresentationStyle.BottomSheet -> {
-                        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                        ModalBottomSheet(
-                            onDismissRequest = onDismissModal,
-                            sheetState = sheetState,
-                        ) {
+                            }
+                        }
+                        PresentationStyle.BottomSheet -> {
+                            if (bottomSheet != null) {
+                                bottomSheet(entry, onDismissModal) { content(entry) }
+                            } else {
+                                DefaultBottomSheetChrome(onDismiss = onDismissModal) {
+                                    content(entry)
+                                }
+                            }
+                        }
+                        PresentationStyle.Screen -> {
                             content(entry)
                         }
-                    }
-                    PresentationStyle.Screen -> {
-                        // Full-screen layered above the animated base (rare)
-                        content(entry)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DefaultDialogChrome(
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        },
+        text = { content() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DefaultBottomSheetChrome(
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        content()
     }
 }
 
@@ -178,6 +216,7 @@ fun NestedForgeNavHost(
     content: @Composable (NavEntry) -> Unit,
 ) {
     val nestedFlow = navigator.nestedBackStack(graphId)
+        ?: navigator.tabBackStack(graphId)
     if (nestedFlow == null) {
         return
     }
@@ -185,13 +224,19 @@ fun NestedForgeNavHost(
 
     if (enableSystemBack && snapshot.canPop) {
         ForgeBackHandler(enabled = true) {
-            navigator.popNested(graphId)
+            if (!navigator.popNested(graphId)) {
+                navigator.popBackStack()
+            }
         }
     }
 
     ForgeNavHostContent(
         snapshot = snapshot,
-        onDismissModal = { navigator.popNested(graphId) },
+        onDismissModal = {
+            if (!navigator.popNested(graphId)) {
+                navigator.popBackStack()
+            }
+        },
         modifier = modifier,
         transitionSpec = transitionSpec,
         content = content,
