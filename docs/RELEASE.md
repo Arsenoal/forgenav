@@ -17,16 +17,16 @@ forgenav.version=1.0.0
 
 2. Commit and push `main`.
 
-3. Tag and push:
+3. Tag and push (this **automatically** starts **Publish Release**):
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-4. GitHub → **Actions** → **Publish Release** → **Run workflow** → tag `v1.0.0`.
+Or re-run manually: GitHub → **Actions** → **Publish Release** → **Run workflow** → tag `v1.0.0`.
 
-5. Job runs on **macOS**: tests, compile, signed upload to staging, portal transfer.
+4. Job runs on **macOS**: tests, compile, signed upload of all library publications, portal transfer.
 
 6. [Central Portal](https://central.sonatype.com/) → **Deployments** → **Publish** all VALIDATED rows for this release.
 

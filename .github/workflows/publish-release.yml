@@ -1,27 +1,68 @@
+# Publishes all ForgeNav library modules to Maven Central staging, then
+# transfers them to the Central Portal for final Publish.
+#
+# Triggers:
+#   - Push of tags matching v* (e.g. v1.0.0)
+#   - Manual workflow_dispatch with a tag input
+#
+# Artifacts:
+#   studio.forgenav:forgenv-core
+#   studio.forgenav:forgenv-compose
+#   studio.forgenav:forgenv-syncforge
+#   (+ KMP platform variants: android, jvm, ios*, metadata)
+#
+# Secrets required: MAVEN_CENTRAL_USERNAME, MAVEN_CENTRAL_PASSWORD,
+#   SIGNING_IN_MEMORY_KEY_B64 (or SIGNING_IN_MEMORY_KEY), optional KEY_ID / PASSWORD
+
 name: Publish Release
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to publish (e.g. v1.0.0)"
-        required: true
+        description: "Git tag to publish (e.g. v1.0.0). Leave empty to use the default tag name."
+        required: false
         default: "v1.0.0"
 
 permissions:
   contents: read
 
+concurrency:
+  group: publish-maven-central
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to Maven Central
     runs-on: macos-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+            TAG="${TAG:-v1.0.0}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]]; then
+            echo "::error::Tag must look like v1.0.0 (got: $TAG)"
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Publishing tag=${TAG} version=${VERSION}"
+
       - name: Checkout tag
         uses: actions/checkout@v4
         with:
-          ref: refs/tags/${{ inputs.tag }}
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -33,25 +74,19 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Resolve release version
-        id: release
-        run: |
-          TAG="${{ inputs.tag }}"
-          VERSION="${TAG#v}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-
       - name: Set release version from tag
         run: |
-          VERSION="${{ steps.release.outputs.version }}"
+          VERSION="${{ steps.tag.outputs.version }}"
           if grep -q '^forgenav\.version=' gradle.properties; then
             sed -i.bak "s/^forgenav\.version=.*/forgenav.version=${VERSION}/" gradle.properties
           else
             echo "forgenav.version=${VERSION}" >> gradle.properties
           fi
+          echo "forgenav.group=$(grep '^forgenav.group=' gradle.properties | cut -d= -f2-)"
+          echo "forgenav.version=$(grep '^forgenav.version=' gradle.properties | cut -d= -f2-)"
           echo "Publishing studio.forgenav:*:${VERSION}"
 
-      - name: Validate release (compile + tests)
+      - name: Validate release (JVM tests + Android/JVM compile)
         run: ./gradlew verifyReleaseSignOff --no-daemon
 
       - name: Compile iOS simulator targets
@@ -61,6 +96,14 @@ jobs:
             :forgenv-compose:compileKotlinIosSimulatorArm64 \
             :forgenv-syncforge:compileKotlinIosSimulatorArm64 \
             --no-daemon
+
+      - name: List Maven publications to upload
+        run: |
+          echo "=== Expected modules ==="
+          echo "  forgenv-core, forgenv-compose, forgenv-syncforge"
+          echo "=== Publication tasks (MavenCentral repository) ==="
+          ./gradlew tasks --all -PmavenCentralPublishing=true --no-daemon 2>/dev/null \
+            | grep -E 'publish.*ToMavenCentralRepository' || true
 
       - name: Drop open staging repositories
         env:
@@ -125,7 +168,7 @@ jobs:
             echo "signing.password=${SIGNING_IN_MEMORY_KEY_PASSWORD}" >> gradle.properties
           fi
 
-      - name: Publish to Maven Central staging
+      - name: Publish all modules to Maven Central staging
         env:
           ORG_GRADLE_PROJECT_mavenCentralPublishing: "true"
           ORG_GRADLE_PROJECT_signAllPublications: "true"
@@ -148,6 +191,8 @@ jobs:
             SIGNING_PASSWORD="$(grep '^signing.password=' gradle.properties | tail -1 | cut -d= -f2-)"
             SIGNING_ARGS+=("-Psigning.password=${SIGNING_PASSWORD}")
           fi
+          # Publishes every KMP/Android/JVM publication for:
+          #   :forgenv-core :forgenv-compose :forgenv-syncforge
           ./gradlew verifyPublishSigning publishAllToMavenCentral \
             --no-daemon --no-parallel "${SIGNING_ARGS[@]}"
 
@@ -161,8 +206,8 @@ jobs:
 
       - name: Post-publish notice
         run: |
-          VERSION="${{ steps.release.outputs.version }}"
+          VERSION="${{ steps.tag.outputs.version }}"
           echo "::notice title=Maven Central portal::Open Central Portal → Deployments. Publish every VALIDATED deployment for studio.forgenav."
-          echo "::notice title=After Central sync::Optional: ./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=${VERSION}"
-          echo "::notice title=GitHub Release::Create the GitHub Release for tag ${{ steps.release.outputs.tag }} manually if desired."
-          echo "Coordinates: studio.forgenav:forgenv-core:${VERSION} (+ compose, syncforge)"
+          echo "::notice title=Artifacts::studio.forgenav:forgenv-core:${VERSION}, forgenv-compose, forgenv-syncforge (+ platform variants)."
+          echo "::notice title=After Central sync::./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=${VERSION}"
+          echo "::notice title=GitHub Release::Optional: create a Release for tag ${{ steps.tag.outputs.tag }} in the UI."
