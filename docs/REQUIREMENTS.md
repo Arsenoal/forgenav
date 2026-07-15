@@ -2,8 +2,8 @@
 
 This document is the **contract** for ForgeNav to function correctly: what the library guarantees, what consumers must provide, what must be true at runtime, and what we still need to harden for production.
 
-**Status:** v1.0.0 foundation (buildable, tested, sample-backed)  
-**Last updated:** 2026-07-14
+**Status:** v1.0.0 published on Maven Central (`studio.forgenav`) and verified  
+**Last updated:** 2026-07-15
 
 ---
 

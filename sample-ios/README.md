@@ -56,5 +56,5 @@ Android registers `forgenav://tasks/{id}`. iOS URL types can be added to `Info.p
 |-------|-----|
 | Framework not found | Clean build folder in Xcode; re-run Gradle embed task |
 | Signing errors | Set `TEAM_ID` in `Config.xcconfig` |
-| Gradle fails on SyncForge | Ensure `../syncforge` exists (composite build) |
+| Gradle fails on SyncForge | CI uses Maven Central `studio.syncforge:syncforge:2.0.0`; local optional composite needs `../syncforge` |
 | Blank UI | Confirm scheme uses Debug and simulator matches arm64/x64 framework |

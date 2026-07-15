@@ -5,19 +5,27 @@ All notable changes to ForgeNav are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] — 2026-07-14
+## [1.0.0] — 2026-07-15
+
+### Published
+
+Maven Central group **`studio.forgenav`** (domain **`forgenav.studio`**):
+
+```text
+studio.forgenav:forgenv-core:1.0.0
+studio.forgenav:forgenv-compose:1.0.0
+studio.forgenav:forgenv-syncforge:1.0.0
+```
+
+GitHub tag `v1.0.0` · publish + verify workflows · artifacts validated on repo1.maven.org.
 
 ### Added
 
-- **forgenv-core** — type-safe navigation (`Route`, `ForgeNavigator`, `BackStack`), deep links (`DeepLinkParser`), multiplatform lifecycle, MVI (`ForgeViewModel`, `MviViewModel`), offline-first ports (`SyncEngine`, `Outbox`, `ConflictResolver`, `SyncAwareState`, optimistic update tracker).
-- **forgenv-compose** — `ForgeNavHost`, nested host, navigator CompositionLocal, `SyncStatusIndicator`, `PendingOperationsBadge`, `OfflineBanner`, `ConflictResolutionDialog`, preview helpers, effect collectors.
-- **forgenv-syncforge** — typed SyncForge adapters (`ForgeNavSync.fromSyncManager`, `SyncForgeEngineAdapter`, `SyncForgeMappers`), composite build against sibling SyncForge, **`LocalSyncForgeLoop`** (real SyncManager + outbox + loopback transport + conflict simulation), bridge helpers for custom engines.
-- **sample-android** / **sample-desktop** — task list demo on the **real sync loop** (enqueue → outbox → sync → conflict), bottom sheets, deep links.
-- Full living README documenting v0.1 → v1.0 architecture decisions.
-- `docs/REQUIREMENTS.md` — correctness contract and integration checklist.
-- **Nav transitions** — `NavTransitions` (SlideHorizontal / Fade / SlideVertical / None) via `AnimatedContent`.
-- **System / predictive back** — `ForgeBackHandler` (Android `PredictiveBackHandler`); desktop Escape / Ctrl+[ in sample.
-- **iOS sample** — `sample-ios` (`ForgeNavSample` framework) + `iosApp` Xcode host; see `sample-ios/README.md`.
+- **forgenv-core** — type-safe navigation (`Route`, `ForgeNavigator`, `BackStack`), deep links (`DeepLinkParser`), multiplatform lifecycle, MVI (`ForgeViewModel`, `MviViewModel`), offline-first ports (`SyncEngine`, `Outbox`, `ConflictResolver`, `SyncAwareState`, optimistic update tracker), saved backstack state (`RouteCodec`, `saveState` / `restoreState`).
+- **forgenv-compose** — `ForgeNavHost`, nested host, navigator CompositionLocal, transitions, predictive/system back, `SyncStatusIndicator`, `PendingOperationsBadge`, `OfflineBanner`, `ConflictResolutionDialog`, preview helpers, effect collectors.
+- **forgenv-syncforge** — typed SyncForge adapters (`ForgeNavSync.fromSyncManager`, `SyncForgeEngineAdapter`, `SyncForgeMappers`), optional local composite SyncForge, **`LocalSyncForgeLoop`** (real SyncManager + outbox + loopback transport + conflict simulation).
+- **sample-android** / **sample-desktop** / **sample-ios** — task list demo on the real sync loop.
+- Docs: living README, `docs/REQUIREMENTS.md`, `docs/MAVEN_PUBLISH.md`, `docs/RELEASE.md`.
 
 ### Targets
 

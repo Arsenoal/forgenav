@@ -1,9 +1,11 @@
 # Release process
 
+**First release:** `1.0.0` is published on Maven Central and verified.
+
 ## Preconditions
 
-- [ ] Namespace `studio.forgenav` verified on Central (domain `forgenav.studio`)
-- [ ] GitHub secrets configured (see [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md))
+- [x] Namespace `studio.forgenav` verified on Central (domain `forgenav.studio`)
+- [x] GitHub secrets configured (see [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md))
 - [ ] `main` CI green
 - [ ] `CHANGELOG.md` updated for the version
 

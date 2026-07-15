@@ -6,12 +6,22 @@ ForgeNav is the missing Compose Multiplatform layer for serious offline-first pr
 
 | | |
 |---|---|
-| **Version** | `1.0.0` |
-| **Maven group** | `studio.forgenav` (DNS: `forgenav.studio`) |
+| **Version** | `1.0.0` (on [Maven Central](https://repo1.maven.org/maven2/studio/forgenav/)) |
+| **Maven group** | `studio.forgenav` (DNS: [forgenav.studio](https://forgenav.studio)) |
+| **Repository** | [github.com/Arsenoal/forgenav](https://github.com/Arsenoal/forgenav) |
 | **Kotlin** | `2.1.10` |
 | **Compose Multiplatform** | `1.7.3` |
 | **Targets** | Android · iOS · JVM (Desktop) · (wasmJs experimental) |
 | **License** | Apache 2.0 |
+
+```kotlin
+dependencies {
+    implementation("studio.forgenav:forgenv-core:1.0.0")
+    implementation("studio.forgenav:forgenv-compose:1.0.0")
+    // optional SyncForge integration:
+    implementation("studio.forgenav:forgenv-syncforge:1.0.0")
+}
+```
 
 ```text
 forgenav/

@@ -2,7 +2,9 @@
 
 **Repository:** [github.com/Arsenoal/forgenav](https://github.com/Arsenoal/forgenav)  
 **Group ID:** `studio.forgenav` (namespace verified via DNS on `forgenav.studio`)  
-**Workflow:** [.github/workflows/publish-release.yml](../.github/workflows/publish-release.yml) (manual **workflow_dispatch** only)
+**Current release on Central:** **`1.0.0`** (tag `v1.0.0`, verified on repo1.maven.org)  
+**Publish workflow:** [.github/workflows/publish-release.yml](../.github/workflows/publish-release.yml) (`v*` tag push or manual dispatch)  
+**Verify workflow:** [.github/workflows/verify-maven-central.yml](../.github/workflows/verify-maven-central.yml) (manual)
 
 ## Published modules
 
@@ -14,7 +16,9 @@
 
 KMP also publishes platform variants (e.g. `-android`, `-jvm`, Apple targets) from the same modules.
 
-## Consumer (after first release)
+Browse: [repo1.maven.org/maven2/studio/forgenav/](https://repo1.maven.org/maven2/studio/forgenav/)
+
+## Consumer
 
 ```kotlin
 dependencies {
@@ -25,12 +29,12 @@ dependencies {
 }
 ```
 
-## 1. One-time setup (done / checklist)
+## 1. One-time setup (completed for 1.0.0)
 
-1. Register domain **`forgenav.studio`**.
-2. Sonatype Central → register namespace **`studio.forgenav`** → DNS TXT verify.
-3. Portal **API token** (username + password).
-4. **GPG** signing key (same key as SyncForge is fine if you prefer one key).
+1. ~~Register domain `forgenav.studio`.~~
+2. ~~Sonatype Central → namespace `studio.forgenav` → DNS TXT verify.~~
+3. Portal **API token** (username + password) — keep in GitHub Actions secrets.
+4. **GPG** signing key — keep in GitHub Actions secrets (can share with SyncForge).
 
 ## 2. GitHub Actions secrets
 
