@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-07-15
+
+### Changed
+
+#### Navigation (N-BS-12 — transactional back stack writes)
+
+- **Full stack as read model, ops as write path** — multi-step mutations apply as a single transaction so collectors see one coherent snapshot
+- **`BackStackOp` + `BackStack.apply`** — internal/public op fold (`Push`, `ReplaceTop`, `Pop`, `PopTo`, `PopUntil`, `Reset`, `TrimToMaxSize`) with `BackStackApplyResult`
+- **Single emission** for `setBackStack`, deep-link `stackRoutes` rebuild, `popBackStack(count)`, `navigate` with `popUpTo` / clear / trim (no intermediate stacks)
+- **One `NavEvent` per public call** for multi-pop (`Popped` once with final top)
+- Convenience `push` / `pop` / `replace` / `reset` remain; they are single-op wrappers over `apply`
+- Design notes: [docs/BACKSTACK_TRANSACTIONS.md](docs/BACKSTACK_TRANSACTIONS.md)
+
+### Compatibility
+
+- App-facing `ForgeNavigator` methods unchanged
+- Process-death save/restore still encodes **full** stacks (`SavedNavigatorState`)
+
 ## [1.1.0] — 2026-07-15
 
 ### Published

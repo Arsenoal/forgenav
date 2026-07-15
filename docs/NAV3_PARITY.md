@@ -4,7 +4,7 @@ Living inventory of everything we can add so ForgeNav **navigation** is as funct
 
 **Audience:** maintainers  
 **Status:** Phase A shipped in **v1.1.0**  
-**Last updated:** 2026-07-15
+**Last updated:** 2026-07-15 (N-BS-12 shipped in v1.2.0)
 
 ---
 
@@ -39,16 +39,16 @@ JetBrains also ships / tracks **CMP-facing Navigation 3** support for multiplatf
 
 ---
 
-## 3. What ForgeNav navigation has today (v1.1.0)
+## 3. What ForgeNav navigation has today (v1.2.0)
 
-Phase A shipped on tag **`v1.1.0`**. Baseline for “as functional as Nav3 for standard apps.”
+Phase A shipped on tag **`v1.1.0`**. **v1.2.0** adds transactional back-stack writes (N-BS-12).
 
 ### Core (`forgenv-core`)
 
 | Capability | API / notes | Nav3 analog |
 |------------|-------------|-------------|
 | Typed destinations | `Route` + app sealed `@Serializable` hierarchy | Nav keys / typed routes |
-| Back stack | `BackStack` / `BackStackSnapshot` as `StateFlow` | Owner-managed back stack list |
+| Back stack | `BackStack` / `BackStackSnapshot` as `StateFlow`; writes via `BackStackOp` + `apply` (single emission) | Owner-managed back stack list |
 | Navigate / replace / pop | `navigate`, `replace`, `popBackStack`, `popBackStack(count)` | push / pop list ops |
 | PopUpTo / set stack | `NavOptions.popUpTo*`, `setBackStack(routes)` | popUpTo + replace stack |
 | Multi-stack / tabs | `TabSpec`, `selectTab`, `tabBackStack`, `navigateInTab` | multiple back stacks |
@@ -113,7 +113,7 @@ Legend: **Status** = missing | partial | done
 | N-BS-09 | Immutable public stack ops only via events | partial | Prefer single writer; document concurrency | P2 |
 | N-BS-10 | Graph-scoped start destinations | done | Tab / nested stacks init with start routes | P0 |
 | N-BS-11 | Floating / independent stacks (flows) | missing | Auth flow stack, modal flow stack separate from main | P1 |
-| N-BS-12 | Stack snapshot diff / transactional navigate | missing | Batch navigate + single recomposition | P2 |
+| N-BS-12 | Stack snapshot diff / transactional navigate | done | `BackStackOp` + `apply`; shipped in **v1.2.0** — [BACKSTACK_TRANSACTIONS.md](BACKSTACK_TRANSACTIONS.md) | P2 |
 
 ### 4.2 Entries, content providers, lifecycle
 
@@ -319,6 +319,7 @@ Goal: honest answer to “why not Nav3?” for most product apps.
 
 ### Phase C — Polish & platform depth (P2–P3)
 
+- ~~**Transactional back stack writes (N-BS-12)**~~ — **shipped in v1.2.0** ([BACKSTACK_TRANSACTIONS.md](BACKSTACK_TRANSACTIONS.md))
 - Shared elements, decorators pipeline, debug overlay, web router, multi-window, KSP Safe Args-like  
 
 ---
@@ -355,9 +356,9 @@ Not required for the badge: shared elements, web router, Fragment interop.
 
 ## 9. Current vs target (scorecard)
 
-| Area | v1.1.0 | Notes |
+| Area | v1.2.0 | Notes |
 |------|--------|-------|
-| Basic stack ops | Strong | |
+| Basic stack ops | Strong | Single-emit transactions (N-BS-12) |
 | Multi-stack / tabs | Strong | `TabSpec` + `TabNavHost` |
 | Adaptive panes | Strong | `ListDetailNavHost` |
 | Results | Strong | `navigateForResult` |
@@ -391,6 +392,7 @@ Reference IDs from this doc (`N-BS-02`, `N-DL-06`, …) in issue titles.
 ## 11. Related docs
 
 - [REQUIREMENTS.md](REQUIREMENTS.md) — overall library correctness  
+- [BACKSTACK_TRANSACTIONS.md](BACKSTACK_TRANSACTIONS.md) — N-BS-12 design (full stack read, op writes)  
 - [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md) — distribution  
 - [SyncForge](https://github.com/Arsenoal/syncforge) — sync engine companion  
 - Android Nav3 overview: [Announcing Navigation 3](https://android-developers.googleblog.com/2025/11/jetpack-navigation-3-is-stable.html) · [navigation3 releases](https://developer.android.com/jetpack/androidx/releases/navigation3)
@@ -403,3 +405,4 @@ Reference IDs from this doc (`N-BS-02`, `N-DL-06`, …) in issue titles.
 |------|--------|
 | 2026-07-15 | Initial backlog from v1.0.0 vs Nav3 capability model |
 | 2026-07-15 | Phase A implemented and shipped as **v1.1.0**; §3 baseline updated |
+| 2026-07-15 | N-BS-12 transactional writes shipped in **v1.2.0** |

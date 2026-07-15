@@ -11,21 +11,19 @@
 ![iOS](https://img.shields.io/badge/platform-iOS-000000?logo=apple&logoColor=white)
 ![Desktop](https://img.shields.io/badge/platform-JVM%20desktop-007396?logo=openjdk&logoColor=white)
 
-**v1.1.0** on [Maven Central](https://central.sonatype.com/namespace/studio.forgenav) · [Release notes](CHANGELOG.md#110---2026-07-15) · tag [`v1.1.0`](https://github.com/Arsenoal/forgenav/releases/tag/v1.1.0)
+**v1.2.0** on [Maven Central](https://central.sonatype.com/namespace/studio.forgenav) · [Release notes](CHANGELOG.md#120---2026-07-15) · tag [`v1.2.0`](https://github.com/Arsenoal/forgenav/releases/tag/v1.2.0)
 
-Type-safe routes, multi-stack Compose navigation (tabs, list–detail, results), MVI with optimistic updates, and first-class sync UX (pending outbox, conflicts, offline banners). **v1.1.0** ships Nav3-level product navigation. Pairs cleanly with **[SyncForge](https://github.com/Arsenoal/syncforge)** — or any outbox-based engine via thin ports.
+Type-safe routes, multi-stack Compose navigation (tabs, list–detail, results), MVI with optimistic updates, and first-class sync UX (pending outbox, conflicts, offline banners). **v1.1.0** shipped Nav3-level product navigation; **v1.2.0** adds transactional back-stack writes. Pairs cleanly with **[SyncForge](https://github.com/Arsenoal/syncforge)** — or any outbox-based engine via thin ports.
 
 > **With SyncForge:** SyncForge owns durable outbox + push/pull. ForgeNav owns navigation and presentation state that *understands* sync (optimistic UI, badges, conflict dialogs).
 
-### What’s new in 1.1.0
+### What’s new in 1.2.0
 
-- Tabs with independent back stacks (`TabSpec` / `TabNavHost`)
-- `navigateForResult` + interceptors + `NavOptions` (popUpTo, singleTop, …)
-- `ListDetailNavHost`, per-entry saveable state, modal chrome slots
-- Deep-link stack rebuild (`stackPrefix`) + Android Intent helpers
-- New artifact: **`studio.forgenav:forgenv-testing:1.1.0`**
+- **Transactional back stack writes (N-BS-12)** — full stack for reads; ops/diffs applied once so hosts don’t see intermediate stacks
+- `BackStackOp` / `BackStack.apply` under the same public navigate/pop/setBackStack API
+- Single emission for `setBackStack`, deep-link stack rebuild, `popBackStack(count)`, popUpTo+navigate
 
-Full notes: [CHANGELOG.md](CHANGELOG.md#110---2026-07-15) · parity: [docs/NAV3_PARITY.md](docs/NAV3_PARITY.md)
+Full notes: [CHANGELOG.md](CHANGELOG.md#120---2026-07-15) · design: [docs/BACKSTACK_TRANSACTIONS.md](docs/BACKSTACK_TRANSACTIONS.md) · parity: [docs/NAV3_PARITY.md](docs/NAV3_PARITY.md)
 
 ---
 
@@ -50,12 +48,12 @@ Full notes: [CHANGELOG.md](CHANGELOG.md#110---2026-07-15) · parity: [docs/NAV3_
 ```kotlin
 // app/build.gradle.kts (or shared KMP commonMain)
 dependencies {
-    implementation("studio.forgenav:forgenv-core:1.1.0")
-    implementation("studio.forgenav:forgenv-compose:1.1.0")
+    implementation("studio.forgenav:forgenv-core:1.2.0")
+    implementation("studio.forgenav:forgenv-compose:1.2.0")
     // optional SyncForge integration:
-    implementation("studio.forgenav:forgenv-syncforge:1.1.0")
+    implementation("studio.forgenav:forgenv-syncforge:1.2.0")
     // optional unit-test helpers:
-    // testImplementation("studio.forgenav:forgenv-testing:1.1.0")
+    // testImplementation("studio.forgenav:forgenv-testing:1.2.0")
 }
 ```
 
@@ -93,7 +91,7 @@ fun App() {
 
 ```toml
 [versions]
-forgenav = "1.1.0"
+forgenav = "1.2.0"
 
 [libraries]
 forgenav-core = { module = "studio.forgenav:forgenv-core", version.ref = "forgenav" }

@@ -1,5 +1,6 @@
 package dev.forgenav.navigation
 
+import app.cash.turbine.test
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
@@ -222,5 +223,67 @@ class ForgeNavigatorNav3Test {
         nav.navigate(Nav3Route.Detail("1"), NavOptions(singleTop = true, launchSingleTop = true))
         // singleTop equal route replaces top rather than growing when already on Detail("1")
         assertEquals(2, nav.backStack.value.size)
+    }
+
+    @Test
+    fun setBackStackSingleSnapshotEmission() = runTest {
+        val nav = DefaultForgeNavigator(
+            rootGraph = NavGraph("root", Nav3Route.Home),
+        )
+        nav.navigate(Nav3Route.Detail("a"))
+
+        nav.backStack.test {
+            assertEquals(2, awaitItem().size)
+            nav.setBackStack(listOf(Nav3Route.Home, Nav3Route.Detail("x"), Nav3Route.Settings))
+            val next = awaitItem()
+            assertEquals(3, next.size)
+            assertEquals(Nav3Route.Settings, next.current?.route)
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun popCountSingleSnapshotAndEvent() = runTest {
+        val nav = DefaultForgeNavigator(
+            rootGraph = NavGraph("root", Nav3Route.Home),
+        )
+        nav.navigate(Nav3Route.Detail("1"))
+        nav.navigate(Nav3Route.Settings)
+        nav.navigate(Nav3Route.Feed)
+
+        nav.events.test {
+            nav.backStack.test {
+                assertEquals(4, awaitItem().size)
+                assertTrue(nav.popBackStack(count = 2))
+                assertEquals(Nav3Route.Detail("1"), awaitItem().current?.route)
+                expectNoEvents()
+            }
+            val event = awaitItem()
+            assertIs<NavEvent.Popped>(event)
+            assertEquals(Nav3Route.Feed, event.from.route)
+            assertEquals(Nav3Route.Detail("1"), event.to?.route)
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun popUpToNavigateSingleEmission() = runTest {
+        val nav = DefaultForgeNavigator(
+            rootGraph = NavGraph("root", Nav3Route.Home),
+        )
+        nav.navigate(Nav3Route.Detail("a"))
+        nav.navigate(Nav3Route.Settings)
+
+        nav.backStack.test {
+            assertEquals(3, awaitItem().size)
+            nav.navigate(
+                Nav3Route.Feed,
+                NavOptions(popUpToRouteKey = "Home", popUpToInclusive = false),
+            )
+            val next = awaitItem()
+            assertEquals(listOf("Home", "Feed"), next.entries.map { it.route.routeKey })
+            // Must not observe intermediate post-popUpTo stack (Home only).
+            expectNoEvents()
+        }
     }
 }

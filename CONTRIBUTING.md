@@ -16,7 +16,7 @@ Thank you for helping make offline-first KMP navigation better.
 ./gradlew :sample-desktop:run
 ```
 
-Current library version is pinned in `gradle.properties` as `forgenav.version` (**1.1.0**).
+Current library version is pinned in `gradle.properties` as `forgenav.version` (**1.2.0**).
 
 ## Project layout
 
@@ -34,10 +34,10 @@ Current library version is pinned in `gradle.properties` as `forgenav.version` (
 
 1. **KMP-first** — new APIs land in `commonMain` unless they are truly platform-specific.
 2. **No hard engine coupling** — sync engines plug in via `SyncEngine` / `Outbox` / `ConflictResolver`.
-3. **Binary compatibility** — treat public API as stable on `main` after 1.0; prefer deprecations. Nav surface expanded in **1.1.0** (additive).
+3. **Binary compatibility** — treat public API as stable on `main` after 1.0; prefer deprecations. Nav surface expanded in **1.1.0** (additive); **1.2.0** is transactional write-path behavior (same public navigate API).
 4. **Tests** — unit-test navigators (prefer `forgenv-testing`), reducers, deep links, and optimistic rollback paths.
 5. **Style** — Kotlin official code style; meaningful names over abbreviations.
-6. **Nav3 backlog** — product navigation gaps live in [docs/NAV3_PARITY.md](docs/NAV3_PARITY.md) (Phase A done in 1.1.0; Phase B+ open).
+6. **Nav3 backlog** — product navigation gaps live in [docs/NAV3_PARITY.md](docs/NAV3_PARITY.md) (Phase A done in 1.1.0; N-BS-12 in 1.2.0; Phase B+ open).
 
 ## Pull requests
 
@@ -50,7 +50,7 @@ Current library version is pinned in `gradle.properties` as `forgenav.version` (
 
 Include:
 
-- ForgeNav version / commit (e.g. `1.1.0` or SHA)
+- ForgeNav version / commit (e.g. `1.2.0` or SHA)
 - Targets affected (Android / iOS / JVM / Web)
 - Minimal repro (route hierarchy, intent sequence, sync status)
 - Whether SyncForge (or another engine) is in the stack

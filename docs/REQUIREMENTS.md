@@ -2,12 +2,12 @@
 
 This document is the **contract** for ForgeNav to function correctly: what the library guarantees, what consumers must provide, what must be true at runtime, and what we still need to harden for production.
 
-**Status:** v1.1.0 on Maven Central (`studio.forgenav`) — Nav3 Phase A navigation  
+**Status:** v1.2.0 on Maven Central (`studio.forgenav`) — Nav3 Phase A + transactional back stack  
 **Last updated:** 2026-07-15
 
 ---
 
-## 1. Status at v1.1.0
+## 1. Status at v1.2.0
 
 ### Shipped
 
@@ -17,8 +17,9 @@ This document is the **contract** for ForgeNav to function correctly: what the l
 4. ~~**Saved backstack state**~~ → `RouteCodec` + `rememberSaveableForgeNavigator`
 5. ~~**Transitions + predictive back**~~ → `NavTransitions` + `ForgeBackHandler`
 6. ~~**iOS sample**~~ → `sample-ios` + `iosApp`
-7. ~~**Maven Central**~~ → `studio.forgenav` **1.1.0** (core, compose, syncforge, testing)
+7. ~~**Maven Central**~~ → `studio.forgenav` **1.2.0** (core, compose, syncforge, testing)
 8. ~~**Nav3 Phase A**~~ → tabs, results, list–detail, interceptors, deep-link stacks — [NAV3_PARITY.md](NAV3_PARITY.md)
+9. ~~**Transactional back stack (N-BS-12)**~~ → `BackStackOp` + single-emit `apply` — [BACKSTACK_TRANSACTIONS.md](BACKSTACK_TRANSACTIONS.md)
 
 ### Still open (manual / Phase B+)
 
@@ -282,9 +283,9 @@ Use this before calling a build “integration complete”:
 
 ## 9. Feature completeness vs correctness
 
-| Capability | Required for *correct* nav/MVI? | Required for *correct* offline-first product? | v1.1.0 status |
+| Capability | Required for *correct* nav/MVI? | Required for *correct* offline-first product? | v1.2.0 status |
 |------------|----------------------------------|-----------------------------------------------|----------------|
-| Type-safe navigate/pop | Yes | Yes | Done |
+| Type-safe navigate/pop | Yes | Yes | Done (single-emit transactions in 1.2.0) |
 | Multi-stack / tabs / results | Often yes for product apps | Often yes | Done (Phase A) |
 | List–detail adaptive | If multi-pane UX | Optional | Done (`ListDetailNavHost`) |
 | Compose host | Yes (if CMP UI) | Yes | Done (+ tabs / list-detail) |
@@ -298,7 +299,7 @@ Use this before calling a build “integration complete”:
 | Animations | No | No | Done (slide/fade/vertical presets) |
 | iOS sample app | No | If shipping iOS | Done (`sample-ios` + `iosApp`) |
 | Unit-test helpers | No | Recommended | Done (`forgenv-testing`) |
-| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.1.0` |
+| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.2.0` |
 
 **Correctness of the library core ≠ completeness of a product integration.**
 
@@ -319,7 +320,7 @@ A consumer app integration is **correct** when:
 
 ---
 
-## 11. Suggested development backlog (after v1.1.0)
+## 11. Suggested development backlog (after v1.2.0)
 
 1. Device smoke QA (sync + process death)  
 2. Nav3 Phase B (floating flows, entry lifecycle, typed results, App Links docs) — [NAV3_PARITY.md](NAV3_PARITY.md)  
@@ -341,7 +342,7 @@ A consumer app integration is **correct** when:
 **App using ForgeNav offline-first:**
 
 - KMP/CMP project  
-- Dependencies: `forgenv-core:1.1.0`, usually `forgenv-compose`, optionally `forgenv-syncforge` / `forgenv-testing`  
+- Dependencies: `forgenv-core:1.2.0`, usually `forgenv-compose`, optionally `forgenv-syncforge` / `forgenv-testing`  
 - Route sealed hierarchy  
 - Navigator + `ForgeNavHost` (or `TabNavHost` / `ListDetailNavHost`)  
 - Sync engine binding (SyncForge or custom implementing ports)  

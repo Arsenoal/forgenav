@@ -157,70 +157,65 @@ class DefaultForgeNavigator(
         val resolved = intercept(route, options) ?: return
         val stack = activeStack()
         val from = stack.current
-        stack.replace(resolved.first, resolved.second.toMetadata())
-        stack.current?.let { _events.tryEmit(NavEvent.Replaced(from, it)) }
+        val result = stack.apply(BackStackOp.ReplaceTop(resolved.first, resolved.second.toMetadata()))
+        if (result.didChange) {
+            result.newTop?.let { _events.tryEmit(NavEvent.Replaced(from, it)) }
+        }
     }
 
-    override fun popBackStack(): Boolean {
-        val stack = activeStack()
-        val from = stack.current ?: return false
-        cancelResultIfNeeded(from)
-        val ok = stack.pop()
-        if (ok) {
-            _events.tryEmit(NavEvent.Popped(from, stack.current))
-        }
-        return ok
-    }
+    override fun popBackStack(): Boolean = popBackStack(count = 1)
 
     override fun popBackStack(routeKey: String, inclusive: Boolean): Boolean {
         val stack = activeStack()
         val from = stack.current ?: return false
-        cancelResultIfNeeded(from)
-        val removed = stack.popTo(routeKey, inclusive)
-        if (removed > 0) {
-            _events.tryEmit(NavEvent.Popped(from, stack.current))
-            return true
-        }
-        return false
+        val result = stack.apply(BackStackOp.PopTo(routeKey, inclusive))
+        if (!result.didChange) return false
+        result.removed.forEach { cancelResultIfNeeded(it) }
+        _events.tryEmit(NavEvent.Popped(from, result.newTop))
+        return true
     }
 
     override fun popUntil(predicate: (NavEntry) -> Boolean): Boolean {
         val stack = activeStack()
         val from = stack.current ?: return false
-        cancelResultIfNeeded(from)
-        val removed = stack.popUntil(predicate)
-        if (removed > 0) {
-            _events.tryEmit(NavEvent.Popped(from, stack.current))
-            return true
-        }
-        return false
+        val result = stack.apply(BackStackOp.PopUntil(predicate))
+        if (!result.didChange) return false
+        result.removed.forEach { cancelResultIfNeeded(it) }
+        _events.tryEmit(NavEvent.Popped(from, result.newTop))
+        return true
     }
 
     override fun popBackStack(count: Int): Boolean {
         if (count <= 0) return false
-        var any = false
-        repeat(count) {
-            if (!popBackStack()) return any
-            any = true
-        }
-        return any
+        val stack = activeStack()
+        val from = stack.current ?: return false
+        val result = stack.apply(BackStackOp.Pop(count))
+        if (!result.didChange) return false
+        result.removed.forEach { cancelResultIfNeeded(it) }
+        _events.tryEmit(NavEvent.Popped(from, result.newTop))
+        return true
     }
 
     override fun reset(route: Route, metadata: RouteMetadata) {
         val stack = activeStack()
         val from = stack.current
-        stack.reset(route, metadata)
-        stack.current?.let { _events.tryEmit(NavEvent.Replaced(from, it)) }
+        val result = stack.apply(BackStackOp.Reset(listOf(route), metadata))
+        if (result.didChange) {
+            result.newTop?.let { _events.tryEmit(NavEvent.Replaced(from, it)) }
+        }
     }
 
     override fun setBackStack(routes: List<Route>, metadata: RouteMetadata) {
         require(routes.isNotEmpty()) { "routes must not be empty" }
         val stack = activeStack()
         val from = stack.current
-        stack.reset(routes.first(), metadata)
-        routes.drop(1).forEach { stack.push(it, metadata) }
-        stack.current?.let { _events.tryEmit(NavEvent.Replaced(from, it)) }
-        trimIfNeeded(stack)
+        val result = stack.apply(
+            BackStackOp.Reset(routes, metadata),
+            BackStackOp.TrimToMaxSize(config.maxBackStackSize),
+        )
+        if (result.didChange) {
+            result.newTop?.let { _events.tryEmit(NavEvent.Replaced(from, it)) }
+        }
     }
 
     override fun selectTab(tabId: String) {
@@ -261,15 +256,16 @@ class DefaultForgeNavigator(
                 ?: error("Unknown nested graph: $graphId")
             BackStack(graph.id, graph.startRoute)
         }
-        stack.push(route, metadata)
+        stack.apply(BackStackOp.Push(route, metadata))
         _events.tryEmit(NavEvent.NestedNavigated(graphId, route))
     }
 
     override fun popNested(graphId: String): Boolean {
         val stack = nestedStacks[graphId] ?: return false
-        val from = stack.current
-        cancelResultIfNeeded(from)
-        return stack.pop()
+        val result = stack.apply(BackStackOp.Pop(1))
+        if (!result.didChange) return false
+        result.removed.forEach { cancelResultIfNeeded(it) }
+        return true
     }
 
     override fun nestedBackStack(graphId: String): StateFlow<BackStackSnapshot>? =
@@ -315,10 +311,11 @@ class DefaultForgeNavigator(
                     }
                 else -> activeStack()
             }
-            targetStack.reset(stackRoutes.first(), options.toMetadata())
-            stackRoutes.drop(1).forEach { r ->
-                targetStack.push(r, options.toMetadata().copy(clearBackStack = false))
-            }
+            // Single emission: full stack rebuild + optional size trim.
+            targetStack.apply(
+                BackStackOp.Reset(stackRoutes, options.toMetadata()),
+                BackStackOp.TrimToMaxSize(config.maxBackStackSize),
+            )
             _events.tryEmit(NavEvent.DeepLinkHandled(deepLink, stackRoutes.last()))
             return true
         }
@@ -463,21 +460,29 @@ class DefaultForgeNavigator(
 
     private fun applyNavigate(
         stack: BackStack,
-        stackId: String,
+        @Suppress("UNUSED_PARAMETER") stackId: String,
         route: Route,
         options: NavOptions,
     ) {
         val from = stack.current
-        options.popUpToRouteKey?.let { key ->
-            stack.popTo(key, options.popUpToInclusive)
-        }
         val metadata = options.toMetadata()
-        when {
-            options.clearBackStack -> stack.reset(route, metadata)
-            else -> stack.push(route, metadata)
+        val ops = buildList {
+            options.popUpToRouteKey?.let { key ->
+                add(BackStackOp.PopTo(key, options.popUpToInclusive))
+            }
+            if (options.clearBackStack) {
+                add(BackStackOp.Reset(listOf(route), metadata))
+            } else {
+                add(BackStackOp.Push(route, metadata))
+            }
+            add(BackStackOp.TrimToMaxSize(config.maxBackStackSize))
         }
-        stack.current?.let { _events.tryEmit(NavEvent.Navigated(from, it, metadata)) }
-        trimIfNeeded(stack)
+        val result = stack.apply(ops)
+        if (result.didChange) {
+            // Cancel results on entries dropped by popUpTo / clear / trim within this transaction.
+            result.removed.forEach { cancelResultIfNeeded(it) }
+            result.newTop?.let { _events.tryEmit(NavEvent.Navigated(from, it, metadata)) }
+        }
     }
 
     private fun cancelResultIfNeeded(entry: NavEntry?) {
@@ -485,15 +490,6 @@ class DefaultForgeNavigator(
         if (resultHub.cancel(requestId)) {
             _events.tryEmit(NavEvent.ResultDelivered(requestId, NavResult.Cancelled))
         }
-    }
-
-    private fun trimIfNeeded(stack: BackStack) {
-        val max = config.maxBackStackSize
-        if (max <= 1) return
-        val snap = stack.snapshot.value
-        if (snap.entries.size <= max) return
-        val trimmed = listOf(snap.entries.first()) + snap.entries.takeLast(max - 1)
-        stack.restore(snap.copy(entries = trimmed))
     }
 }
 
