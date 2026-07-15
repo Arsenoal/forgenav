@@ -328,7 +328,7 @@ tasks.register("verifyMavenCentralArtifacts") {
     group = "verification"
     description =
         "Checks all required ForgeNav module POMs on repo1.maven.org " +
-            "(use -PverifyMavenCentralVersion=1.0.0 or -PverifyMavenCentralTag=v1.0.0)."
+            "(use -PverifyMavenCentralVersion=1.1.0 or -PverifyMavenCentralTag=v1.1.0)."
     doLast {
         val version = resolveVerifyMavenCentralVersion()
         val retries = providers.environmentVariable("MAVEN_CENTRAL_VERIFY_RETRIES")

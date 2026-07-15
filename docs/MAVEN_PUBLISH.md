@@ -31,7 +31,7 @@ dependencies {
 }
 ```
 
-## 1. One-time setup (completed for 1.0.0)
+## 1. One-time setup (completed; used for 1.0.0 and 1.1.0)
 
 1. ~~Register domain `forgenav.studio`.~~
 2. ~~Sonatype Central → namespace `studio.forgenav` → DNS TXT verify.~~

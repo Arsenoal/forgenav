@@ -7,34 +7,25 @@ This document is the **contract** for ForgeNav to function correctly: what the l
 
 ---
 
-## 1. Recommended next step (do this first)
+## 1. Status at v1.1.0
 
-### Goal
-Turn the sample’s *demo* sync path into a **real offline-first loop** so the library is proven with production-shaped data flow.
+### Shipped
 
-### Next step status — **DONE (local real loop)**
-
-Composite SyncForge + typed adapters + sample real loop are implemented:
-
-1. ~~**Composite / peer SyncForge**~~ → `settings.gradle.kts` `includeBuild("../syncforge")`
+1. ~~**Composite / peer SyncForge**~~ → optional `includeBuild("../syncforge")` or Maven Central
 2. ~~**Typed adapters**~~ → `ForgeNavSync.fromSyncManager`, `SyncForgeMappers`, `SyncForgeEngineAdapter`
-3. ~~**Feature screen loop**~~ → `LocalSyncForgeLoop` + sample `TaskViewModel`  
-   (`enqueueChange` → outbox → loopback push/pull → `deferToUser` conflicts)
-4. **Device smoke test** — run `sample-android` / `sample-desktop` manually
-5. ~~Saved backstack state~~ → `RouteCodec` + `saveState`/`restoreState` + `rememberSaveableForgeNavigator`
-6. ~~Transitions + predictive back~~ → `NavTransitions` + `ForgeBackHandler` / `PredictiveBackHandler`
-7. ~~iOS sample~~ → `sample-ios` + `iosApp` (Xcode host; run on macOS)
-8. ~~Maven Central publish~~ → `studio.forgenav` 1.0.0 + 1.1.0 + Publish / Verify Actions
-9. Still later: device smoke, umbrella `forgenav-android` artifact  
-10. ~~Navigation depth (Phase A)~~ → [NAV3_PARITY.md](NAV3_PARITY.md) shipped in **1.1.0**
+3. ~~**Feature screen loop**~~ → `LocalSyncForgeLoop` + sample `TaskViewModel`
+4. ~~**Saved backstack state**~~ → `RouteCodec` + `rememberSaveableForgeNavigator`
+5. ~~**Transitions + predictive back**~~ → `NavTransitions` + `ForgeBackHandler`
+6. ~~**iOS sample**~~ → `sample-ios` + `iosApp`
+7. ~~**Maven Central**~~ → `studio.forgenav` **1.1.0** (core, compose, syncforge, testing)
+8. ~~**Nav3 Phase A**~~ → tabs, results, list–detail, interceptors, deep-link stacks — [NAV3_PARITY.md](NAV3_PARITY.md)
 
-### Success criteria
+### Still open (manual / Phase B+)
 
-- [x] Composite resolves `studio.syncforge:syncforge` to sibling project
-- [x] Sample uses SyncManager outbox path (not ControllableSyncEngine)
-- [x] Saved backstack API + unit tests (`SavedNavStateTest`)
-- [ ] Device smoke: offline queue, sync, conflict dialog (manual)
+- [ ] Device smoke: offline queue, sync, conflict dialog
 - [ ] Device smoke: process death restore (Don't keep activities)
+- [ ] Nav3 Phase B/C items (see parity doc)
+- [ ] Optional umbrella `forgenav-android` artifact
 
 ---
 
@@ -291,19 +282,23 @@ Use this before calling a build “integration complete”:
 
 ## 9. Feature completeness vs correctness
 
-| Capability | Required for *correct* nav/MVI? | Required for *correct* offline-first product? | v1.0 status |
-|------------|----------------------------------|-----------------------------------------------|-------------|
+| Capability | Required for *correct* nav/MVI? | Required for *correct* offline-first product? | v1.1.0 status |
+|------------|----------------------------------|-----------------------------------------------|----------------|
 | Type-safe navigate/pop | Yes | Yes | Done |
-| Compose host | Yes (if CMP UI) | Yes | Done |
-| Deep links | If app uses them | Often yes | Done (patterns registered by app) |
+| Multi-stack / tabs / results | Often yes for product apps | Often yes | Done (Phase A) |
+| List–detail adaptive | If multi-pane UX | Optional | Done (`ListDetailNavHost`) |
+| Compose host | Yes (if CMP UI) | Yes | Done (+ tabs / list-detail) |
+| Deep links | If app uses them | Often yes | Done (stack rebuild + Android Intent helpers) |
+| Interceptors / conditional start | If gated navigation | Often yes | Done |
 | MVI base | If using library VMs | Yes | Done |
 | Optimistic tracker | If using optimistic APIs | Yes | Done |
 | Sync ports + UI widgets | No | Yes | Done (ports + UI) |
-| Real SyncForge typed adapter | No | **Yes for SyncForge apps** | Bridge only — **next step** |
-| Saved state / process death | Strongly recommended Android | Yes for mobile QA | Done (`RouteCodec` + `rememberSaveableForgeNavigator`) |
-| Animations | No | No | Not done |
-| iOS sample app | No | If shipping iOS | Targets only |
-| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.1.0` on Central |
+| Real SyncForge typed adapter | No | **Yes for SyncForge apps** | Done (`ForgeNavSync` + local loop) |
+| Saved state / process death | Strongly recommended Android | Yes for mobile QA | Done (`RouteCodec` + per-entry SaveableState) |
+| Animations | No | No | Done (slide/fade/vertical presets) |
+| iOS sample app | No | If shipping iOS | Done (`sample-ios` + `iosApp`) |
+| Unit-test helpers | No | Recommended | Done (`forgenv-testing`) |
+| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.1.0` |
 
 **Correctness of the library core ≠ completeness of a product integration.**
 
@@ -324,15 +319,13 @@ A consumer app integration is **correct** when:
 
 ---
 
-## 11. Suggested development backlog (after next step)
+## 11. Suggested development backlog (after v1.1.0)
 
-1. Real SyncForge E2E (current next step)  
-2. Android saved backstack state  
-3. Predictive back + transitions  
-4. iOS sample  
-5. Publish + binary compatibility  
-6. wasm sample (if web matters)  
-7. DI helpers  
+1. Device smoke QA (sync + process death)  
+2. Nav3 Phase B (floating flows, entry lifecycle, typed results, App Links docs) — [NAV3_PARITY.md](NAV3_PARITY.md)  
+3. wasm sample (if web matters)  
+4. DI helpers  
+5. Binary compatibility tooling (apiDump) if releasing often
 
 ---
 
@@ -348,11 +341,11 @@ A consumer app integration is **correct** when:
 **App using ForgeNav offline-first:**
 
 - KMP/CMP project  
-- Dependencies: `forgenv-core`, usually `forgenv-compose`, optionally `forgenv-syncforge`  
+- Dependencies: `forgenv-core:1.1.0`, usually `forgenv-compose`, optionally `forgenv-syncforge` / `forgenv-testing`  
 - Route sealed hierarchy  
-- Navigator + NavHost  
+- Navigator + `ForgeNavHost` (or `TabNavHost` / `ListDetailNavHost`)  
 - Sync engine binding (SyncForge or custom implementing ports)  
-- Platform deep link plumbing  
+- Platform deep link plumbing (`stackPrefix` for multi-entry stacks)  
 
 **CI:**
 

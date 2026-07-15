@@ -2,6 +2,8 @@
 
 Compose Multiplatform sample hosting the same offline-first tasks UI as Android/Desktop.
 
+Aligned with library **v1.1.0** (Nav3 Phase A navigation APIs available; sample uses saveable host + stack deep links).
+
 ## Layout
 
 | Path | Role |
@@ -42,13 +44,15 @@ The Xcode *Compile Kotlin Framework* phase runs:
 ## What the sample demonstrates
 
 - Type-safe navigation (`ForgeNavHost` + transitions)
-- Saveable navigator (process death APIs; iOS uses composition restore)
+- Saveable navigator (`rememberSaveableForgeNavigator` + `RouteCodec`)
+- Deep link stack rebuild (`forgenav://tasks/{id}` → Home → Detail)
 - Real SyncForge loop via `LocalSyncForgeLoop` (outbox, offline, conflicts)
 - Sync status UI (badges, offline banner, conflict dialog)
 
 ## Deep links
 
-Android registers `forgenav://tasks/{id}`. iOS URL types can be added to `Info.plist` later; pass URI into `SampleApp(deepLinkUri = …)` from `onOpenURL` if needed.
+Android registers `forgenav://tasks/{id}` and rebuilds the stack via `DeepLinkPattern.stackPrefix`.  
+iOS: add URL types to `Info.plist` if needed; pass the URI into `SampleApp(deepLinkUri = …)` from Swift `onOpenURL`.
 
 ## Troubleshooting
 

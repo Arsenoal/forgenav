@@ -39,7 +39,9 @@ JetBrains also ships / tracks **CMP-facing Navigation 3** support for multiplatf
 
 ---
 
-## 3. What ForgeNav navigation has today (v1.0.0)
+## 3. What ForgeNav navigation has today (v1.1.0)
+
+Phase A shipped on tag **`v1.1.0`**. Baseline for “as functional as Nav3 for standard apps.”
 
 ### Core (`forgenv-core`)
 
@@ -47,31 +49,44 @@ JetBrains also ships / tracks **CMP-facing Navigation 3** support for multiplatf
 |------------|-------------|-------------|
 | Typed destinations | `Route` + app sealed `@Serializable` hierarchy | Nav keys / typed routes |
 | Back stack | `BackStack` / `BackStackSnapshot` as `StateFlow` | Owner-managed back stack list |
-| Navigate / replace / pop | `ForgeNavigator.navigate`, `replace`, `popBackStack` | push / pop list ops |
-| Pop to / pop until | `popBackStack(routeKey)`, `popUntil` | popUpTo-ish |
-| Reset | `reset` | clear + set |
-| Nested stacks | `NavGraph.children`, `navigateNested`, `popNested`, `nestedBackStack` | multiple stacks (basic) |
+| Navigate / replace / pop | `navigate`, `replace`, `popBackStack`, `popBackStack(count)` | push / pop list ops |
+| PopUpTo / set stack | `NavOptions.popUpTo*`, `setBackStack(routes)` | popUpTo + replace stack |
+| Multi-stack / tabs | `TabSpec`, `selectTab`, `tabBackStack`, `navigateInTab` | multiple back stacks |
+| Nested stacks | `NavGraph.children`, `navigateNested`, `popNested` | nested graphs |
+| Results | `navigateForResult`, `setResult`, `NavResult` | type-safe results (Any payload) |
+| Interceptors | `NavigationInterceptor`, `StartRouteProvider` | guards / redirects |
 | Entry identity | `NavEntry.id` | entry identity |
-| Presentation modes | `PresentationStyle.Screen / Dialog / BottomSheet` | scenes / dialog destinations (basic) |
-| Metadata | `RouteMetadata` (singleTop, clearBackStack, extras) | nav options (partial) |
-| Deep link parse | `DeepLinkParser` patterns + serialization | deep link matching (common) |
-| Deep link apply | `handleDeepLink` + deferred until `onStart` | intent → navigate (partial) |
-| Save / restore | `RouteCodec`, `SavedNavigatorState`, `saveState` / `restoreState` | saveable back stack |
-| Events | `NavEvent` shared flow | observers / analytics hooks |
-| Config | `NavigatorConfig` (max stack, deep link defer, strict graph id) | — |
+| Presentation modes | `PresentationStyle.Screen / Dialog / BottomSheet` | dialog destinations |
+| Nav options | `NavOptions` + `RouteMetadata` | NavOptions DSL |
+| Deep link parse | `DeepLinkParser` + priority + `stackPrefix` | deep link matching |
+| Deep link apply | `handleDeepLink` (tabs, stack rebuild, deferred until `onStart`) | intent → navigate |
+| Save / restore | `RouteCodec`, `SavedNavigatorState` v2 (`selectedTabId`) | saveable back stack |
+| Events | `NavEvent` shared flow | observers / analytics |
+| Config | `NavigatorConfig` | — |
 
 ### Compose (`forgenv-compose`)
 
 | Capability | API / notes | Nav3 analog |
 |------------|-------------|-------------|
-| Host | `ForgeNavHost` / `ForgeNavHostContent` | `NavDisplay` |
+| Host | `ForgeNavHost` / `ForgeNavHostContent` + modal slots | `NavDisplay` |
+| Tabs scaffold | `TabNavHost` | bottom nav + multi-stack |
+| List–detail | `ListDetailNavHost` + breakpoint | adaptive scenes |
+| Per-entry saveable | `SaveableStateProvider(entry.id)` | entry decorators (saveable) |
 | Nested host | `NestedForgeNavHost` | multi-stack UI |
 | Ambient navigator | `LocalForgeNavigator` | composition locals |
-| Remember | `rememberForgeNavigator` | remember controllers |
-| Saveable remember | `rememberSaveableForgeNavigator` | `rememberNavBackStack`-class APIs |
+| Remember | `rememberForgeNavigator` / `rememberSaveableForgeNavigator` | remember controllers |
 | Transitions | `NavTransitions` (slide/fade/vertical/none) | animated content |
-| System / predictive back | `ForgeBackHandler` (Android PredictiveBackHandler) | system back integration |
+| System / predictive back | `ForgeBackHandler` | system back |
+| Android deep links | `Intent.toForgeDeepLinkUri()`, `handleForgeDeepLink` | intent helpers |
 | Typed host | `ForgeNavHostTyped` | entry provider when |
+
+### Testing (`forgenv-testing`)
+
+| Capability | API / notes |
+|------------|-------------|
+| Test navigator | `testForgeNavigator` (starts immediately; deep links not deferred) |
+| Assertions | `assertRouteKeys`, `assertCurrent`, `assertSelectedTab`, `assertTabRouteKeys` |
+| Results helpers | `requireOk`, `deliverResultAndPop`, `assertCancelled` |
 
 ### Intentionally *not* nav (keep separate)
 
@@ -285,18 +300,18 @@ Legend: **Status** = missing | partial | done
 
 ## 6. Phased delivery plan (recommended)
 
-### Phase A — “As functional as Nav3 for standard apps” (P0)
+### Phase A — “As functional as Nav3 for standard apps” (P0) — **SHIPPED in v1.1.0**
 
 Goal: honest answer to “why not Nav3?” for most product apps.
 
-1. **Multi-stack / tabs** — N-BS-01, N-BS-02, N-BS-10, N-UI-05  
-2. **Results** — N-RS-01…N-RS-04  
-3. **List–detail adaptive** — N-AD-01, N-AD-02, N-AD-04  
-4. **Per-entry SaveableStateHolder** — N-EN-02, N-SV-02  
-5. **Deep link stack building + platform helpers** — N-DL-06, N-DL-07, N-DL-08, N-DL-10, N-DL-12  
-6. **Modal host slots** — N-MD-01…N-MD-03  
-7. **Interceptors / conditional start** — N-GR-04, N-GR-06  
-8. **Testing module** — N-TS-01, N-TS-02  
+1. ~~**Multi-stack / tabs**~~ — N-BS-01, N-BS-02, N-BS-10, N-UI-05  
+2. ~~**Results**~~ — N-RS-01…N-RS-04  
+3. ~~**List–detail adaptive**~~ — N-AD-01, N-AD-02, N-AD-04  
+4. ~~**Per-entry SaveableStateHolder**~~ — N-EN-02, N-SV-02  
+5. ~~**Deep link stack building + platform helpers**~~ — N-DL-06, N-DL-07, N-DL-08, N-DL-12 (iOS open URL still partial)  
+6. ~~**Modal host slots**~~ — N-MD-01…N-MD-03  
+7. ~~**Interceptors / conditional start**~~ — N-GR-04, N-GR-06  
+8. ~~**Testing module**~~ — N-TS-01, N-TS-02  
 
 ### Phase B — “Nav3-comfortable power users” (P1)
 
@@ -340,8 +355,8 @@ Not required for the badge: shared elements, web router, Fragment interop.
 
 ## 9. Current vs target (scorecard)
 
-| Area | Today (post Phase A) | Notes |
-|------|----------------------|-------|
+| Area | v1.1.0 | Notes |
+|------|--------|-------|
 | Basic stack ops | Strong | |
 | Multi-stack / tabs | Strong | `TabSpec` + `TabNavHost` |
 | Adaptive panes | Strong | `ListDetailNavHost` |
@@ -387,4 +402,4 @@ Reference IDs from this doc (`N-BS-02`, `N-DL-06`, …) in issue titles.
 | Date | Change |
 |------|--------|
 | 2026-07-15 | Initial backlog from v1.0.0 vs Nav3 capability model |
-| 2026-07-15 | Phase A implemented: tabs, results, list-detail, saveable entries, deep-link stacks, interceptors, testing module |
+| 2026-07-15 | Phase A implemented and shipped as **v1.1.0**; §3 baseline updated |

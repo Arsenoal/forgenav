@@ -8,6 +8,7 @@
 - [x] Namespace `studio.forgenav` verified on Central (domain `forgenav.studio`)
 - [x] GitHub secrets configured (see [MAVEN_PUBLISH.md](MAVEN_PUBLISH.md))
 - [x] `CHANGELOG.md` updated for the version
+- [x] Docs (README, MAVEN_PUBLISH, REQUIREMENTS, NAV3_PARITY, CONTRIBUTING) pin **1.1.0**
 - [ ] `main` CI green (check Actions before tagging if uncertain)
 
 ## Steps
