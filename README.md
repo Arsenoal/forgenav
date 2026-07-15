@@ -7,6 +7,7 @@ ForgeNav is the missing Compose Multiplatform layer for serious offline-first pr
 | | |
 |---|---|
 | **Version** | `1.0.0` |
+| **Maven group** | `studio.forgenav` (DNS: `forgenav.studio`) |
 | **Kotlin** | `2.1.10` |
 | **Compose Multiplatform** | `1.7.3` |
 | **Targets** | Android · iOS · JVM (Desktop) · (wasmJs experimental) |
@@ -374,7 +375,7 @@ None in core.
 Add dependency:
 
 ```kotlin
-implementation("dev.forgenav:forgenv-syncforge:1.0.0")
+implementation("studio.forgenav:forgenv-syncforge:1.0.0")
 // peer:
 implementation("studio.syncforge:syncforge:<version>")
 ```
@@ -501,7 +502,7 @@ Run microbenchmarks in your app module; ForgeNav keeps the stack O(n) on pop-to 
 
 #### Migration from 0.x → 1.0
 
-1. Change coordinates to `dev.forgenav:forgenv-*:1.0.0`.
+1. Change coordinates to `studio.forgenav:forgenv-*:1.0.0`.
 2. Ensure routes implement `Route` and are `@Serializable` where deep-linked.
 3. Replace ad-hoc snackbar SharedFlows with `Effect` collection.
 4. Map SyncForge status through `ForgeNavSync.withSyncForge` or `SyncStatusMapper`.
@@ -610,9 +611,9 @@ open iosApp/iosApp.xcodeproj
 forgenav = "1.0.0"
 
 [libraries]
-forgenav-core = { module = "dev.forgenav:forgenv-core", version.ref = "forgenav" }
-forgenav-compose = { module = "dev.forgenav:forgenv-compose", version.ref = "forgenav" }
-forgenav-syncforge = { module = "dev.forgenav:forgenv-syncforge", version.ref = "forgenav" }
+forgenav-core = { module = "studio.forgenav:forgenv-core", version.ref = "forgenav" }
+forgenav-compose = { module = "studio.forgenav:forgenv-compose", version.ref = "forgenav" }
+forgenav-syncforge = { module = "studio.forgenav:forgenv-syncforge", version.ref = "forgenav" }
 ```
 
 ```kotlin
@@ -625,12 +626,8 @@ dependencies {
 }
 ```
 
-For local composite builds during development:
-
-```kotlin
-// settings.gradle.kts
-includeBuild("../forgenav") // or include modules directly
-```
+Until the first Central release, use a composite/include build (see repo root).  
+Publish checklist: [docs/MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md) · [docs/RELEASE.md](docs/RELEASE.md).
 
 ### Minimal app (common Compose)
 

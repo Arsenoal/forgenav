@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
     `maven-publish`
+    signing
 }
 
 kotlin {
@@ -74,18 +75,4 @@ android {
     }
 }
 
-publishing {
-    publications.withType<MavenPublication> {
-        pom {
-            name.set("ForgeNav Core")
-            description.set("Type-safe navigation and offline-first MVI state management for Kotlin Multiplatform")
-            url.set(providers.gradleProperty("forgenav.pom.url"))
-            licenses {
-                license {
-                    name.set(providers.gradleProperty("forgenav.license.name"))
-                    url.set(providers.gradleProperty("forgenav.license.url"))
-                }
-            }
-        }
-    }
-}
+// POM / repository / signing configured by gradle/publish-convention.gradle.kts

@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     `maven-publish`
+    signing
 }
 
 kotlin {
@@ -73,12 +74,4 @@ android {
     }
 }
 
-publishing {
-    publications.withType<MavenPublication> {
-        pom {
-            name.set("ForgeNav Compose")
-            description.set("Compose Multiplatform UI layer for ForgeNav — NavHost, sync indicators, conflict dialogs")
-            url.set(providers.gradleProperty("forgenav.pom.url"))
-        }
-    }
-}
+// POM / repository / signing configured by gradle/publish-convention.gradle.kts

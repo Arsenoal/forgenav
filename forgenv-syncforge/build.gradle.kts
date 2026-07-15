@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
     `maven-publish`
+    signing
 }
 
 kotlin {
@@ -64,12 +65,4 @@ android {
     }
 }
 
-publishing {
-    publications.withType<MavenPublication> {
-        pom {
-            name.set("ForgeNav SyncForge")
-            description.set("SyncForge integration adapters and local sync loop for ForgeNav")
-            url.set(providers.gradleProperty("forgenav.pom.url"))
-        }
-    }
-}
+// POM / repository / signing configured by gradle/publish-convention.gradle.kts
