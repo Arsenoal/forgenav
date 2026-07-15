@@ -10,20 +10,38 @@ import java.util.Base64
 val mavenCentralRepoBase = "https://repo1.maven.org/maven2/studio/forgenav"
 val stagingApiBase = "https://ossrh-staging-api.central.sonatype.com"
 
+/** Root KMP modules (metadata / umbrella POMs). */
 val publishableLibraryArtifactIds = listOf(
     "forgenv-core",
     "forgenv-compose",
     "forgenv-syncforge",
 )
 
-/** Platform-variant POMs commonly published for KMP Android/JVM. */
-val mavenCentralPlatformArtifactIds = listOf(
+/**
+ * Full set of module coordinates that must resolve on repo1.maven.org after a complete
+ * multiplatform publish (matches Central Portal component set for 1.0.0).
+ */
+val mavenCentralRequiredArtifactIds = listOf(
+    // forgenv-core
+    "forgenv-core",
     "forgenv-core-android",
     "forgenv-core-jvm",
+    "forgenv-core-iosarm64",
+    "forgenv-core-iosx64",
+    "forgenv-core-iossimulatorarm64",
+    // forgenv-compose
+    "forgenv-compose",
     "forgenv-compose-android",
-    "forgenv-compose-desktop",
+    "forgenv-compose-iosarm64",
+    "forgenv-compose-iosx64",
+    "forgenv-compose-iossimulatorarm64",
+    // forgenv-syncforge
+    "forgenv-syncforge",
     "forgenv-syncforge-android",
     "forgenv-syncforge-jvm",
+    "forgenv-syncforge-iosarm64",
+    "forgenv-syncforge-iosx64",
+    "forgenv-syncforge-iossimulatorarm64",
 )
 
 fun Project.readGradlePropertiesVersion(propertiesFile: java.io.File): String {
@@ -289,13 +307,45 @@ tasks.register("finalizeMavenCentralStaging") {
     }
 }
 
+fun Project.resolveVerifyMavenCentralVersion(): String {
+    val raw = providers.gradleProperty("verifyMavenCentralVersion").orNull?.trim()
+        ?.takeIf { it.isNotEmpty() }
+        ?: providers.gradleProperty("verifyMavenCentralTag").orNull?.trim()
+            ?.takeIf { it.isNotEmpty() }
+        ?: readGradlePropertiesVersion(rootProject.file("gradle.properties"))
+    return raw.removePrefix("v")
+}
+
 tasks.register("verifyMavenCentralArtifacts") {
     group = "verification"
-    description = "Checks root library POMs on repo1.maven.org for forgenav.version."
+    description =
+        "Checks all required ForgeNav module POMs on repo1.maven.org " +
+            "(use -PverifyMavenCentralVersion=1.0.0 or -PverifyMavenCentralTag=v1.0.0)."
     doLast {
-        val version = providers.gradleProperty("verifyMavenCentralVersion").orNull?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?: readGradlePropertiesVersion(rootProject.file("gradle.properties"))
+        val version = resolveVerifyMavenCentralVersion()
+        val retries = providers.environmentVariable("MAVEN_CENTRAL_VERIFY_RETRIES")
+            .orNull?.toIntOrNull() ?: 12
+        val sleepSec = providers.environmentVariable("MAVEN_CENTRAL_VERIFY_SLEEP_SEC")
+            .orNull?.toIntOrNull() ?: 30
+        logger.lifecycle(
+            "Verifying ${mavenCentralRequiredArtifactIds.size} Maven Central POMs " +
+                "for studio.forgenav:*:$version",
+        )
+        verifyMavenCentralArtifacts(
+            logger = logger,
+            artifacts = mavenCentralRequiredArtifactIds,
+            version = version,
+            retries = retries,
+            sleepSec = sleepSec,
+        )
+    }
+}
+
+tasks.register("verifyMavenCentralRootArtifacts") {
+    group = "verification"
+    description = "Checks only root module POMs (core/compose/syncforge) on Maven Central."
+    doLast {
+        val version = resolveVerifyMavenCentralVersion()
         val retries = providers.environmentVariable("MAVEN_CENTRAL_VERIFY_RETRIES")
             .orNull?.toIntOrNull() ?: 12
         val sleepSec = providers.environmentVariable("MAVEN_CENTRAL_VERIFY_SLEEP_SEC")

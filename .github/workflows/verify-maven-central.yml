@@ -1,0 +1,84 @@
+# Manually verify that a released tag's artifacts are fully available on Maven Central
+# (repo1.maven.org). Run AFTER clicking Publish on VALIDATED deployments in Sonatype Central Portal.
+#
+# Actions → Verify Maven Central → Run workflow → tag or version (e.g. v1.0.0 or 1.0.0)
+
+name: Verify Maven Central
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag or bare version to verify (e.g. v1.0.0 or 1.0.0)"
+        required: true
+        default: "v1.0.0"
+      retries:
+        description: "How many times to re-check if artifacts are not yet synced"
+        required: false
+        default: "20"
+      sleep_sec:
+        description: "Seconds to wait between retries"
+        required: false
+        default: "30"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-artifacts:
+    name: Validate all artifacts on Maven Central
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Resolve version
+        id: ver
+        run: |
+          RAW="${{ inputs.tag }}"
+          RAW="${RAW#v}"
+          if [[ ! "$RAW" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]]; then
+            echo "::error::Invalid version/tag: ${{ inputs.tag }} (expected v1.0.0 or 1.0.0)"
+            exit 1
+          fi
+          echo "version=${RAW}" >> "$GITHUB_OUTPUT"
+          echo "Verifying studio.forgenav:*:${RAW}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Use main for verify scripts; artifacts are validated by version on Central, not by tree
+          ref: main
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Verify all required Maven Central POMs
+        env:
+          MAVEN_CENTRAL_VERIFY_RETRIES: ${{ inputs.retries }}
+          MAVEN_CENTRAL_VERIFY_SLEEP_SEC: ${{ inputs.sleep_sec }}
+        run: |
+          ./gradlew verifyMavenCentralArtifacts \
+            -PverifyMavenCentralVersion=${{ steps.ver.outputs.version }} \
+            --no-daemon
+
+      - name: Summary
+        if: success()
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          echo "## Maven Central validation passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "All required POMs for **studio.forgenav:\*:${VERSION}** returned HTTP 200 on repo1.maven.org." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Consumer coordinates" >> "$GITHUB_STEP_SUMMARY"
+          echo '```kotlin' >> "$GITHUB_STEP_SUMMARY"
+          echo "implementation(\"studio.forgenav:forgenv-core:${VERSION}\")" >> "$GITHUB_STEP_SUMMARY"
+          echo "implementation(\"studio.forgenav:forgenv-compose:${VERSION}\")" >> "$GITHUB_STEP_SUMMARY"
+          echo "implementation(\"studio.forgenav:forgenv-syncforge:${VERSION}\")" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

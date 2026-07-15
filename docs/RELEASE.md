@@ -32,7 +32,7 @@ Or re-run manually: GitHub → **Actions** → **Publish Release** → **Run wor
 
 7. Create **GitHub Release** for `v1.0.0` (optional but recommended).
 
-8. After Central sync:
+8. After Central sync, run **Actions → Verify Maven Central** (manual) with tag `v1.0.0`, or:
 
 ```bash
 ./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.0.0

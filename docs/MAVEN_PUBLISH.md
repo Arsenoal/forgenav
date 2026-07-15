@@ -98,10 +98,17 @@ git push origin v1.0.0
 3. **Actions → Publish Release → Run workflow** → enter tag `v1.0.0`.
 4. After the job succeeds: Central Portal → **Publish** deployments.
 5. Optional: create a GitHub Release for the tag in the UI.
-6. After sync (~15–60 min):
+6. After sync (~15–60 min), validate all artifacts:
+
+**GitHub (manual job):** Actions → **Verify Maven Central** → Run workflow → tag `v1.0.0`  
+(or version `1.0.0`). Retries until POMs appear on `repo1.maven.org`.
+
+**Locally:**
 
 ```bash
 ./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralVersion=1.0.0
+# or
+./gradlew verifyMavenCentralArtifacts -PverifyMavenCentralTag=v1.0.0
 ```
 
 ## 5. POM metadata (repo)
