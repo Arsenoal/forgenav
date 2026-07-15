@@ -24,7 +24,9 @@ Composite SyncForge + typed adapters + sample real loop are implemented:
 5. ~~Saved backstack state~~ → `RouteCodec` + `saveState`/`restoreState` + `rememberSaveableForgeNavigator`
 6. ~~Transitions + predictive back~~ → `NavTransitions` + `ForgeBackHandler` / `PredictiveBackHandler`
 7. ~~iOS sample~~ → `sample-ios` + `iosApp` (Xcode host; run on macOS)
-8. Still later: Maven publish, device smoke
+8. ~~Maven Central publish~~ → `studio.forgenav` 1.0.0 + Publish / Verify Actions
+9. Still later: device smoke, umbrella `forgenav-android` artifact  
+10. Navigation depth: [NAV3_PARITY.md](NAV3_PARITY.md) (tabs, list–detail, results, deep links)
 
 ### Success criteria
 
@@ -301,7 +303,7 @@ Use this before calling a build “integration complete”:
 | Saved state / process death | Strongly recommended Android | Yes for mobile QA | Done (`RouteCodec` + `rememberSaveableForgeNavigator`) |
 | Animations | No | No | Not done |
 | iOS sample app | No | If shipping iOS | Targets only |
-| Maven publish | No | For external consumers | Local modules |
+| Maven publish | No | For external consumers | **Done** — `studio.forgenav:*:1.0.0` on Central |
 
 **Correctness of the library core ≠ completeness of a product integration.**
 

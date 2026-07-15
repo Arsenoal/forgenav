@@ -132,6 +132,7 @@ Browse published coordinates: [Maven Central — studio.forgenav](https://repo1.
 | | |
 |---|---|
 | **Correctness contract** | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) |
+| **Nav3 parity backlog** | [docs/NAV3_PARITY.md](docs/NAV3_PARITY.md) |
 | **Maven publish** | [docs/MAVEN_PUBLISH.md](docs/MAVEN_PUBLISH.md) |
 | **Release process** | [docs/RELEASE.md](docs/RELEASE.md) |
 | **Changelog** | [CHANGELOG.md](CHANGELOG.md) |
