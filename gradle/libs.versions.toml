@@ -11,7 +11,8 @@ android-targetSdk = "35"
 junit = "4.13.2"
 turbine = "1.2.0"
 dokka = "2.0.0"
-syncforge = "2.0.1"
+# Published on Maven Central (2.0.1 may be local-only / not yet on Central)
+syncforge = "2.0.0"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }

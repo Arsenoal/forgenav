@@ -17,13 +17,16 @@ dependencyResolutionManagement {
     }
 }
 
-// Composite SyncForge from the sibling Studio project (source of truth for offline-first engine).
-// Resolves studio.syncforge:syncforge to the local :syncforge project.
-includeBuild("../syncforge") {
-    dependencySubstitution {
-        substitute(module("studio.syncforge:syncforge")).using(project(":syncforge"))
-        substitute(module("studio.syncforge:syncforge-annotations"))
-            .using(project(":syncforge-annotations"))
+// Optional composite SyncForge when developing next to a local clone.
+// CI / publish use Maven Central (studio.syncforge:syncforge) instead.
+val localSyncForge = file("../syncforge")
+if (localSyncForge.isDirectory && file(localSyncForge, "settings.gradle.kts").exists()) {
+    includeBuild(localSyncForge) {
+        dependencySubstitution {
+            substitute(module("studio.syncforge:syncforge")).using(project(":syncforge"))
+            substitute(module("studio.syncforge:syncforge-annotations"))
+                .using(project(":syncforge-annotations"))
+        }
     }
 }
 
